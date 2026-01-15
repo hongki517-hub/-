@@ -1,0 +1,1982 @@
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { 
+  Sword, Shield, Heart, Skull, Coins, Users, Zap, Trophy, Play, Activity, 
+  Shirt, Footprints, HardHat, Package, X, Warehouse, ShoppingBag, 
+  Flame, Snowflake, Wind, Sun, Moon, Mountain, Hammer, Flower, CloudLightning,
+  Crosshair, Dices, Save, RotateCcw, FastForward, UserPlus, AlertTriangle, Check,
+  FlaskConical, Hourglass, Star, Crown, Target, Hammer as Anvil, Trash2, Gem, Backpack, ArrowUpCircle, Award,
+  Church, PlusCircle, Box, Watch, Grab, Hexagon, Feather, DoorOpen, LogOut
+} from 'lucide-react';
+
+// --- 상수 및 데이터 ---
+const STAGE_THEMES = [
+  { name: "어둠의 숲", bg: "bg-gradient-to-b from-slate-900 via-green-950 to-slate-900", accent: "from-green-600 to-emerald-600" },
+  { name: "심해 유적", bg: "bg-gradient-to-b from-blue-950 via-indigo-950 to-slate-900", accent: "from-blue-600 to-indigo-600" },
+  { name: "용암 지대", bg: "bg-gradient-to-b from-red-950 via-orange-950 to-slate-900", accent: "from-red-600 to-orange-600" },
+  { name: "천공의 성", bg: "bg-gradient-to-b from-sky-900 via-cyan-900 to-slate-800", accent: "from-sky-500 to-cyan-500" },
+  { name: "공허의 땅", bg: "bg-gradient-to-b from-purple-950 via-fuchsia-950 to-black", accent: "from-purple-600 to-pink-600" },
+];
+
+const ELEMENTS = {
+  normal: { 
+    name: '노멀', icon: <div className="w-3 h-3 rounded-full bg-gray-400"/>, color: 'text-gray-300', gemColor: 'bg-gray-500',
+    img1: "https://github.com/hongki517-hub/-/blob/main/ChatGPT%20Image%202026%EB%85%84%201%EC%9B%94%2014%EC%9D%BC%20%EC%98%A4%ED%9B%84%2012_15_12.png?raw=true"
+  },
+  fire: { 
+    name: '불', icon: <Flame size={14} />, color: 'text-red-400', gemColor: 'bg-red-500', 
+    img1: "https://github.com/hongki517-hub/-/blob/main/Gemini_Generated_Image_x552g4x552g4x552.png?raw=true",
+    img2: "https://github.com/hongki517-hub/-/blob/main/%ED%99%94%EC%97%BC2.png?raw=true",
+    img3: "https://github.com/hongki517-hub/-/blob/main/%ED%99%94%EC%97%BC3.png?raw=true"
+  },
+  ice: { 
+    name: '얼음', icon: <Snowflake size={14} />, color: 'text-cyan-400', gemColor: 'bg-cyan-400', 
+    img1: "https://github.com/hongki517-hub/-/blob/main/Gemini_Generated_Image_weqrsnweqrsnweqr.png?raw=true" 
+  },
+  lightning: { 
+    name: '번개', icon: <CloudLightning size={14} />, color: 'text-yellow-400', gemColor: 'bg-yellow-400',
+    img1: "https://github.com/hongki517-hub/-/blob/main/Gemini_Generated_Image_imh1c4imh1c4imh1.png?raw=true",
+    img2: "https://github.com/hongki517-hub/-/blob/main/Gemini_Generated_Image_4ho8d64ho8d64ho8.png?raw=true",
+    img3: "https://github.com/hongki517-hub/-/blob/main/Gemini_Generated_Image_lduydqlduydqlduy.png?raw=true"
+  },
+  wind: { 
+    name: '바람', icon: <Wind size={14} />, color: 'text-green-400', gemColor: 'bg-green-400',
+    img1: "https://github.com/hongki517-hub/-/blob/main/Gemini_Generated_Image_v5r1psv5r1psv5r1.png?raw=true",
+    img2: "https://github.com/hongki517-hub/-/blob/main/Gemini_Generated_Image_z0u13uz0u13uz0u1.png?raw=true",
+    img3: "https://github.com/hongki517-hub/-/blob/main/Gemini_Generated_Image_vthpmzvthpmzvthp.png?raw=true"
+  },
+  petal: { 
+    name: '꽃잎', icon: <Flower size={14} />, color: 'text-pink-400', gemColor: 'bg-pink-400',
+    img1: "https://github.com/hongki517-hub/-/blob/main/Gemini_Generated_Image_6rzkuu6rzkuu6rzk.png?raw=true",
+    img2: "https://github.com/hongki517-hub/-/blob/main/Gemini_Generated_Image_az2w56az2w56az2w.png?raw=true",
+    img3: "https://github.com/hongki517-hub/-/blob/main/Gemini_Generated_Image_7w2xjy7w2xjy7w2x.png?raw=true"
+  },
+  earth: { 
+    name: '대지', icon: <Mountain size={14} />, color: 'text-amber-600', gemColor: 'bg-amber-600',
+    img1: "https://github.com/hongki517-hub/-/blob/main/Gemini_Generated_Image_xlikd6xlikd6xlik.png?raw=true",
+    img2: "https://github.com/hongki517-hub/-/blob/main/Gemini_Generated_Image_cj7c86cj7c86cj7c.png?raw=true",
+    img3: "https://github.com/hongki517-hub/-/blob/main/Gemini_Generated_Image_sf56ntsf56ntsf56.png?raw=true"
+  },
+  steel: { 
+    name: '강철', icon: <Hammer size={14} />, color: 'text-slate-400', gemColor: 'bg-slate-400',
+    img1: "https://github.com/hongki517-hub/-/blob/main/Gemini_Generated_Image_mibjjumibjjumibj.png?raw=true",
+    img2: "https://github.com/hongki517-hub/-/blob/main/Gemini_Generated_Image_ulp476ulp476ulp4.png?raw=true",
+    img3: "https://github.com/hongki517-hub/-/blob/main/Gemini_Generated_Image_bcki31bcki31bcki.png?raw=true"
+  },
+  dark: { 
+    name: '어둠', icon: <Moon size={14} />, color: 'text-purple-400', gemColor: 'bg-purple-500', 
+    img1: "https://github.com/hongki517-hub/-/blob/main/Gemini_Generated_Image_x1e4gsx1e4gsx1e4.png?raw=true" 
+  },
+  light: { 
+    name: '빛', icon: <Sun size={14} />, color: 'text-yellow-100', gemColor: 'bg-yellow-100',
+    img1: "https://github.com/hongki517-hub/-/blob/main/Gemini_Generated_Image_tdb8ketdb8ketdb8.png?raw=true",
+    img2: "https://github.com/hongki517-hub/-/blob/main/Gemini_Generated_Image_4fy4la4fy4la4fy4.png?raw=true",
+    img3: "https://github.com/hongki517-hub/-/blob/main/Gemini_Generated_Image_10feqq10feqq10fe.png?raw=true"
+  },
+};
+
+const MONSTER_RANKS = {
+  normal: { name: '일반', color: 'text-gray-300', statMult: 1.0, gemChance: 0.1 },
+  peculiar: { name: '특이', color: 'text-green-400', statMult: 1.3, gemChance: 0.2 },
+  profound: { name: '심오', color: 'text-blue-400', statMult: 1.6, gemChance: 0.3 },
+  abyss: { name: '심연', color: 'text-purple-400', statMult: 2.0, gemChance: 0.4 },
+  calamity: { name: '재앙', color: 'text-red-500', statMult: 3.0, gemChance: 0.5 },
+  catastrophe: { name: '대재앙', color: 'text-orange-500', statMult: 4.5, gemChance: 0.7 },
+  apocalypse: { name: '종말', color: 'text-fuchsia-500', statMult: 6.0, gemChance: 1.0 },
+};
+
+// 장비 등급 7단계
+const RARITY = {
+  common: { name: '일반', color: 'text-gray-400', border: 'border-gray-600', bg: 'bg-gray-800', bonus: 1.0, prob: 1.0 },
+  uncommon: { name: '고급', color: 'text-green-400', border: 'border-green-500', bg: 'bg-green-900/20', bonus: 1.2, prob: 0.6 },
+  rare: { name: '희귀', color: 'text-blue-400', border: 'border-blue-500', bg: 'bg-blue-900/20', bonus: 1.5, prob: 0.3 },
+  epic: { name: '영웅', color: 'text-purple-400', border: 'border-purple-500', bg: 'bg-purple-900/20', bonus: 2.0, prob: 0.15 },
+  legendary: { name: '전설', color: 'text-orange-500', border: 'border-orange-500', bg: 'bg-orange-900/20', bonus: 3.0, prob: 0.05 },
+  mythic: { name: '신화', color: 'text-red-500', border: 'border-red-600', bg: 'bg-red-900/20', bonus: 5.0, prob: 0.01 },
+  ancient: { name: '고대', color: 'text-yellow-300', border: 'border-yellow-500', bg: 'bg-yellow-900/40', bonus: 8.0, prob: 0.002 },
+};
+
+const POTIONS = {
+  hp_small: { name: '소형 치유 물약', type: 'hp', value: 50, cost: 50, icon: <Heart size={14} className="text-red-400"/> },
+  hp_mid: { name: '중형 치유 물약', type: 'hp', value: 150, cost: 120, icon: <Heart size={14} className="text-red-500"/> },
+  mp_small: { name: '소형 마나 물약', type: 'mp', value: 30, cost: 80, icon: <Zap size={14} className="text-blue-400"/> },
+};
+
+const WEAKNESS_MAP = {
+  fire: 'steel', steel: 'petal', petal: 'earth', earth: 'lightning', 
+  lightning: 'wind', wind: 'ice', ice: 'fire', light: 'dark', dark: 'light'
+};
+
+const BASIC_ATTACK = { 
+  id: 'basic_attack',
+  name: '평타', 
+  mp: 0, 
+  type: 'single', 
+  dmgRate: 1.0, 
+  cooldown: 0,
+  desc: '기본 공격'
+};
+
+const JOB_GROWTH = {
+  '용사': { hp: 1.1, mp: 1.0, atk: 1.1, def: 1.1, spd: 1.0, hit: 10, eva: 5 },
+  '전사': { hp: 1.4, mp: 0.8, atk: 1.0, def: 1.4, spd: 0.8, hit: 15, eva: 5 },
+  '성직자': { hp: 1.0, mp: 1.3, atk: 0.8, def: 0.9, spd: 0.9, hit: 10, eva: 5 },
+  '궁수': { hp: 0.9, mp: 1.0, atk: 1.4, def: 0.7, spd: 1.3, hit: 30, eva: 20 },
+  '마법사': { hp: 0.8, mp: 1.5, atk: 1.5, def: 0.6, spd: 1.1, hit: 10, eva: 10 },
+};
+
+const JOB_TREE = {
+  '초보': {
+    next: ['전사', '창지기', '검사', '마법사', '궁수', '성직자'],
+    growth: { hp: 1.0, mp: 1.0, atk: 1.0, def: 1.0, spd: 1.0, hit: 5, eva: 5 },
+    skills: [{ name: "돌팔매", mp: 5, dmgRate: 1.1, cooldown: 0, type: 'single', desc: "작은 돌 던지기" }],
+    icon: <Users size={16}/>
+  },
+  '전사': { // 탱커
+    next: ['수호자'],
+    growth: { hp: 1.5, mp: 0.8, atk: 1.0, def: 1.5, spd: 0.8, hit: 10, eva: 5 },
+    skills: [{ name: "방패 강타", mp: 15, dmgRate: 1.4, cooldown: 2, type: 'single', desc: "적을 기절시킬 수도 있음" }],
+    icon: <Shield size={16}/>
+  },
+  '수호자': { 
+    next: ['전신'],
+    growth: { hp: 1.8, mp: 0.9, atk: 1.1, def: 1.8, spd: 0.8, hit: 15, eva: 5 },
+    skills: [{ name: "철벽 방어", mp: 30, dmgRate: 0, cooldown: 4, type: 'buff_self', desc: "자신 방어력 대폭 증가" }],
+    icon: <Shield size={16} className="text-blue-400"/>
+  },
+  '전신': { 
+    next: [],
+    growth: { hp: 2.2, mp: 1.0, atk: 1.3, def: 2.0, spd: 0.9, hit: 20, eva: 10 },
+    skills: [{ name: "지진파", mp: 50, dmgRate: 2.5, cooldown: 5, type: 'aoe', desc: "지면을 강타하여 광역 피해" }],
+    icon: <Shield size={16} className="text-yellow-400"/>
+  },
+  '창지기': { // 공격형
+    next: ['랜서'],
+    growth: { hp: 1.1, mp: 1.0, atk: 1.5, def: 0.9, spd: 1.1, hit: 10, eva: 10 },
+    skills: [{ name: "찌르기", mp: 15, dmgRate: 1.6, cooldown: 2, type: 'single', desc: "방어 관통 피해" }],
+    icon: <Trophy size={16}/>
+  },
+  '랜서': {
+    next: ['용기사'],
+    growth: { hp: 1.2, mp: 1.1, atk: 1.8, def: 1.0, spd: 1.2, hit: 15, eva: 15 },
+    skills: [{ name: "다중 찌르기", mp: 30, dmgRate: 1.2, cooldown: 3, type: 'aoe', desc: "전방의 적들을 꿰뚫음" }],
+    icon: <Trophy size={16} className="text-red-400"/>
+  },
+  '용기사': {
+    next: [],
+    growth: { hp: 1.4, mp: 1.2, atk: 2.2, def: 1.2, spd: 1.3, hit: 25, eva: 20 },
+    skills: [{ name: "드래곤 다이브", mp: 60, dmgRate: 3.5, cooldown: 5, type: 'single', desc: "하늘에서 낙하하여 초강력 피해" }],
+    icon: <Trophy size={16} className="text-yellow-400"/>
+  },
+  '검사': { // 밸런스
+    next: ['기사'],
+    growth: { hp: 1.2, mp: 1.0, atk: 1.3, def: 1.2, spd: 1.2, hit: 20, eva: 10 },
+    skills: [{ name: "연속 베기", mp: 20, dmgRate: 0.9, cooldown: 2, type: 'multi', hitCount: 2, desc: "두 번 베기" }],
+    icon: <Sword size={16}/>
+  },
+  '기사': {
+    next: ['검성'],
+    growth: { hp: 1.4, mp: 1.1, atk: 1.5, def: 1.4, spd: 1.3, hit: 25, eva: 15 },
+    skills: [{ name: "반격 태세", mp: 30, dmgRate: 0, cooldown: 4, type: 'buff_self', desc: "회피율 및 반격 확률 증가" }],
+    icon: <Sword size={16} className="text-blue-400"/>
+  },
+  '검성': {
+    next: [],
+    growth: { hp: 1.6, mp: 1.2, atk: 1.9, def: 1.5, spd: 1.5, hit: 35, eva: 25 },
+    skills: [{ name: "일섬", mp: 50, dmgRate: 4.0, cooldown: 5, type: 'single', desc: "적을 일격에 베어냄" }],
+    icon: <Sword size={16} className="text-yellow-400"/>
+  },
+  '마법사': { 
+    next: ['위저드'],
+    growth: { hp: 0.8, mp: 1.5, atk: 1.5, def: 0.6, spd: 1.0, hit: 10, eva: 5 },
+    skills: [{ name: "매직 미사일", mp: 15, dmgRate: 1.3, cooldown: 1, type: 'single', desc: "유도 마법 화살" }],
+    icon: <Zap size={16}/>
+  },
+  '위저드': {
+    next: ['아크메이지'],
+    growth: { hp: 0.9, mp: 1.8, atk: 1.8, def: 0.7, spd: 1.1, hit: 15, eva: 10 },
+    skills: [{ name: "마력 폭발", mp: 40, dmgRate: 2.0, cooldown: 3, type: 'aoe', desc: "마력을 폭발시켜 광역 피해" }],
+    icon: <Zap size={16} className="text-purple-400"/>
+  },
+  '아크메이지': {
+    next: [],
+    growth: { hp: 1.0, mp: 2.2, atk: 2.5, def: 0.8, spd: 1.2, hit: 20, eva: 15 },
+    skills: [{ name: "아마겟돈", mp: 100, dmgRate: 5.0, cooldown: 7, type: 'aoe', desc: "종말의 마법" }],
+    icon: <Zap size={16} className="text-yellow-400"/>
+  },
+  '궁수': { 
+    next: ['레인저'],
+    growth: { hp: 0.9, mp: 1.0, atk: 1.4, def: 0.7, spd: 1.3, hit: 30, eva: 15 },
+    skills: [{ name: "더블 샷", mp: 15, dmgRate: 0.8, cooldown: 2, type: 'multi', hitCount: 2, desc: "화살 두 발 발사" }],
+    icon: <Crosshair size={16}/>
+  },
+  '레인저': {
+    next: ['신궁'],
+    growth: { hp: 1.0, mp: 1.2, atk: 1.7, def: 0.8, spd: 1.5, hit: 40, eva: 25 },
+    skills: [{ name: "집중 사격", mp: 30, dmgRate: 2.5, cooldown: 3, type: 'single', desc: "치명타 확률이 높은 사격" }],
+    icon: <Crosshair size={16} className="text-green-400"/>
+  },
+  '신궁': {
+    next: [],
+    growth: { hp: 1.1, mp: 1.4, atk: 2.1, def: 0.9, spd: 1.8, hit: 60, eva: 35 },
+    skills: [{ name: "화살비", mp: 60, dmgRate: 2.0, cooldown: 5, type: 'aoe', desc: "수많은 화살을 퍼부음" }],
+    icon: <Crosshair size={16} className="text-yellow-400"/>
+  },
+  '성직자': { 
+    next: ['프리스트'],
+    growth: { hp: 1.0, mp: 1.3, atk: 0.8, def: 0.9, spd: 0.9, hit: 10, eva: 5 },
+    skills: [{ name: "치유", mp: 20, dmgRate: 0, cooldown: 2, type: 'heal_single', desc: "아군 1명 회복" }],
+    icon: <Heart size={16}/>
+  },
+  '프리스트': {
+    next: ['성인'],
+    growth: { hp: 1.2, mp: 1.6, atk: 0.9, def: 1.1, spd: 1.0, hit: 15, eva: 10 },
+    skills: [{ name: "광역 치유", mp: 45, dmgRate: 0, cooldown: 4, type: 'heal_all', desc: "아군 전체 회복" }],
+    icon: <Heart size={16} className="text-blue-400"/>
+  },
+  '성인': {
+    next: [],
+    growth: { hp: 1.5, mp: 2.0, atk: 1.0, def: 1.4, spd: 1.1, hit: 20, eva: 15 },
+    skills: [{ name: "부활의 빛", mp: 100, dmgRate: 0, cooldown: 8, type: 'buff_all', desc: "아군 전체 능력치 대폭 상승" }],
+    icon: <Heart size={16} className="text-yellow-400"/>
+  },
+};
+
+const ELEMENT_SKILLS = {
+  normal: [], 
+  fire: [
+    { name: "화염구", mp: 15, dmgRate: 1.5, cooldown: 1, reqLv: 1, type: 'single', desc: "화염 데미지" },
+    { name: "화염방사", mp: 35, dmgRate: 1.2, cooldown: 3, reqLv: 5, type: 'aoe', desc: "[광역] 화염 피해" },
+    { name: "폭발", mp: 50, dmgRate: 3.0, cooldown: 4, reqLv: 10, type: 'single', desc: "강력한 폭발" },
+    { name: "메테오", mp: 100, dmgRate: 4.5, cooldown: 6, reqLv: 15, type: 'aoe', desc: "[광역] 운석 소환" },
+  ],
+  ice: [
+    { name: "고드름", mp: 15, dmgRate: 1.4, cooldown: 1, reqLv: 1, type: 'single', desc: "얼음 피해" },
+    { name: "동결", mp: 30, dmgRate: 2.0, cooldown: 3, reqLv: 5, type: 'single', desc: "적을 얼려 행동 불가" },
+    { name: "눈보라", mp: 60, dmgRate: 1.5, cooldown: 4, reqLv: 10, type: 'aoe', desc: "[광역] 냉기 피해" },
+    { name: "절대영도", mp: 90, dmgRate: 4.2, cooldown: 6, reqLv: 15, type: 'aoe', desc: "[광역] 모든 것을 얼림" },
+  ],
+  lightning: [
+    { name: "전기충격", mp: 15, dmgRate: 1.6, cooldown: 1, reqLv: 1, type: 'single', desc: "전기 피해" },
+    { name: "연쇄번개", mp: 40, dmgRate: 1.8, cooldown: 3, reqLv: 5, type: 'aoe', desc: "[광역] 튕기는 번개" },
+    { name: "플라즈마", mp: 60, dmgRate: 3.2, cooldown: 4, reqLv: 10, type: 'single', desc: "고에너지 방출" },
+    { name: "천둥신", mp: 110, dmgRate: 5.0, cooldown: 7, reqLv: 15, type: 'single', desc: "신의 심판" },
+  ],
+  wind: [
+    { name: "윈드커터", mp: 12, dmgRate: 1.4, cooldown: 0, reqLv: 1, type: 'single', desc: "바람 칼날" },
+    { name: "돌풍", mp: 25, dmgRate: 1.9, cooldown: 2, reqLv: 5, type: 'single', desc: "적을 띄움" },
+    { name: "칼날폭풍", mp: 50, dmgRate: 1.5, cooldown: 3, reqLv: 10, type: 'aoe', desc: "[광역] 베어내는 바람" },
+    { name: "태풍", mp: 80, dmgRate: 4.0, cooldown: 5, reqLv: 15, type: 'aoe', desc: "[광역] 폭풍" },
+  ],
+  petal: [
+    { name: "꽃잎", mp: 15, dmgRate: 1.3, cooldown: 1, reqLv: 1, type: 'single', desc: "날카로운 꽃잎" },
+    { name: "치유의향", mp: 35, dmgRate: 0, cooldown: 3, reqLv: 5, type: 'heal_all', desc: "[회복] 아군 전체 치유" },
+    { name: "포자폭탄", mp: 50, dmgRate: 3.0, cooldown: 4, reqLv: 10, type: 'single', desc: "중독 유발" },
+    { name: "만개", mp: 90, dmgRate: 4.3, cooldown: 6, reqLv: 15, type: 'aoe', desc: "[광역] 생명의 폭발" },
+  ],
+  earth: [
+    { name: "돌팔매", mp: 10, dmgRate: 1.5, cooldown: 1, reqLv: 1, type: 'single', desc: "돌 던지기" },
+    { name: "대지의방패", mp: 30, dmgRate: 0, cooldown: 4, reqLv: 5, type: 'buff_all', desc: "[버프] 아군 방어 증가" },
+    { name: "지진", mp: 55, dmgRate: 2.0, cooldown: 5, reqLv: 10, type: 'aoe', desc: "[광역] 땅 흔들기" },
+    { name: "지각변동", mp: 95, dmgRate: 4.5, cooldown: 7, reqLv: 15, type: 'single', desc: "지형을 바꿈" },
+  ],
+  steel: [
+    { name: "메탈펀치", mp: 12, dmgRate: 1.5, cooldown: 1, reqLv: 1, type: 'single', desc: "단단한 주먹" },
+    { name: "칼날폭풍", mp: 30, dmgRate: 1.4, cooldown: 3, reqLv: 5, type: 'aoe', desc: "[광역] 쇳조각 비" },
+    { name: "철벽", mp: 40, dmgRate: 0, cooldown: 5, reqLv: 10, type: 'buff_self', desc: "[버프] 자신 무적급 방어" },
+    { name: "기가드릴", mp: 100, dmgRate: 4.8, cooldown: 7, reqLv: 15, type: 'single', desc: "꿰뚫는 일격" },
+  ],
+  dark: [
+    { name: "어둠화살", mp: 15, dmgRate: 1.5, cooldown: 1, reqLv: 1, type: 'single', desc: "어둠의 기운" },
+    { name: "공포", mp: 35, dmgRate: 1.0, cooldown: 3, reqLv: 5, type: 'debuff_all', desc: "[디버프] 적 공격력 감소" },
+    { name: "나이트메어", mp: 60, dmgRate: 3.5, cooldown: 5, reqLv: 10, type: 'single', desc: "악몽 구현" },
+    { name: "블랙홀", mp: 120, dmgRate: 3.0, cooldown: 8, reqLv: 15, type: 'aoe', desc: "[광역] 공간 삭제" },
+  ],
+  light: [
+    { name: "빛의탄환", mp: 15, dmgRate: 1.4, cooldown: 1, reqLv: 1, type: 'single', desc: "정화의 빛" },
+    { name: "축복", mp: 35, dmgRate: 0, cooldown: 3, reqLv: 5, type: 'buff_all', desc: "[버프] 아군 공격력 증가" },
+    { name: "섬광", mp: 60, dmgRate: 3.4, cooldown: 5, reqLv: 10, type: 'single', desc: "눈부신 빛 (실명)" },
+    { name: "천상의창", mp: 110, dmgRate: 5.2, cooldown: 7, reqLv: 15, type: 'single', desc: "신의 창" },
+  ],
+};
+
+const MONSTER_NAMES = ["슬라임", "고블린", "늑대", "오크", "스켈레톤", "트롤", "골렘", "가고일", "미노타우르스", "드래곤"];
+const BOSS_NAMES = ["오크 대장", "자이언트 골렘", "리치 왕", "에인션트 드래곤", "마왕의 그림자"];
+const MID_BOSS_NAMES = ["킹 슬라임", "고블린 로드", "웨어울프", "다크 나이트", "스펙터"];
+
+// 10개 슬롯 (속성 6 + 공통 4)
+const ITEM_TYPES = {
+  // 속성 장비 (세트 효과 O)
+  weapon: { name: '무기', icon: <Sword size={14} />, stat: 'atk', category: 'elemental' },
+  head: { name: '투구', icon: <HardHat size={14} />, stat: 'hp', category: 'elemental' },
+  body: { name: '갑옷', icon: <Shirt size={14} />, stat: 'def', category: 'elemental' },
+  legs: { name: '하의', icon: <div className="text-[10px] font-bold">PT</div>, stat: 'spd', category: 'elemental' },
+  feet: { name: '신발', icon: <Footprints size={14} />, stat: 'eva', category: 'elemental' },
+  cape: { name: '망토', icon: <Feather size={14} />, stat: 'mp', category: 'elemental' }, // New Slot
+  // 공통 장비 (세트 효과 X)
+  ring: { name: '반지', icon: <div className="w-3 h-3 border-2 border-current rounded-full"/>, stat: 'atk', category: 'common' },
+  necklace: { name: '목걸이', icon: <div className="text-[10px]">NC</div>, stat: 'hp', category: 'common' },
+  belt: { name: '벨트', icon: <div className="h-1 w-3 bg-current"/>, stat: 'def', category: 'common' },
+  gloves: { name: '장갑', icon: <Grab size={14} />, stat: 'hit', category: 'common' },
+};
+
+const OPTION_TYPES = [
+    { type: 'atk', name: '공격력' },
+    { type: 'hp', name: '체력' },
+    { type: 'def', name: '방어력' },
+    { type: 'crit', name: '치명타' },
+];
+
+const JOB_TYPES = {
+  '전사': 'warrior', '수호자': 'warrior', '전신': 'warrior',
+  '창지기': 'warrior', '랜서': 'warrior', '용기사': 'warrior',
+  '검사': 'warrior', '기사': 'warrior', '검성': 'warrior',
+  '마법사': 'mage', '위저드': 'mage', '아크메이지': 'mage',
+  '궁수': 'archer', '레인저': 'archer', '신궁': 'archer',
+  '성직자': 'cleric', '프리스트': 'cleric', '성인': 'cleric',
+  '초보': 'novice'
+};
+
+const JOB_TYPE_NAMES = {
+  'warrior': '전사계열',
+  'mage': '마법계열',
+  'archer': '궁수계열',
+  'cleric': '성직자계열',
+  'novice': '초보자'
+};
+
+const randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+const formatNumber = (num) => Math.floor(num).toLocaleString();
+const getJobType = (jobName) => JOB_TYPES[jobName] || 'novice';
+
+export default function App() {
+  const [gameState, setGameState] = useState('menu'); 
+  const [menuTab, setMenuTab] = useState('main'); 
+  const [stage, setStage] = useState(1);
+  const [gold, setGold] = useState(1000); 
+  const [logs, setLogs] = useState([]);
+  const [gems, setGems] = useState({ fire: 0, ice: 0, lightning: 0, wind: 0, petal: 0, earth: 0, steel: 0, dark: 0, light: 0 });
+
+  const [party, setParty] = useState([]);
+  const [barracks, setBarracks] = useState([]); 
+  const [inventory, setInventory] = useState([]);
+  const [enemies, setEnemies] = useState([]);
+  const [floatingTexts, setFloatingTexts] = useState([]); 
+  const [gambleChoice, setGambleChoice] = useState('odd'); 
+  const [betAmount, setBetAmount] = useState(100); 
+  
+  const [turn, setTurn] = useState('player'); 
+  const [selectedHeroIndex, setSelectedHeroIndex] = useState(null);
+  const [targetingMode, setTargetingMode] = useState(false);
+  const [selectedSkill, setSelectedSkill] = useState(null); 
+  const [actionMode, setActionMode] = useState(null); 
+  
+  const [levelUpQueue, setLevelUpQueue] = useState([]); 
+  const [jobChangeQueue, setJobChangeQueue] = useState([]); 
+  const [selectedEquipHero, setSelectedEquipHero] = useState(null);
+  const [warehouseTab, setWarehouseTab] = useState('equip'); 
+  const [manageHeroId, setManageHeroId] = useState(null);
+  
+  const [partyManageMode, setPartyManageMode] = useState(false); 
+
+  const logContainerRef = useRef(null);
+
+  // --- Helper Functions ---
+  const getUnitStats = (unit) => {
+    if (!unit) return { maxHp: 1, maxMp: 1, atk: 1, def: 0, spd: 1, hit: 100, eva: 0 };
+    
+    // 몬스터
+    if (typeof unit.rank === 'string') {
+        return {
+            maxHp: Math.floor(unit.baseMaxHp),
+            maxMp: Math.floor(unit.baseMaxMp),
+            atk: Math.floor(unit.baseAtk),
+            def: 5, spd: 10, hit: 90, eva: 5
+        };
+    }
+
+    const jobData = JOB_TREE[unit.job];
+    const growth = jobData ? jobData.growth : { hp: 1.0, mp: 1.0, atk: 1.0, def: 1.0, spd: 1.0, hit: 5, eva: 5 };
+    
+    let baseHp = (unit.baseMaxHp + (unit.level * 10 * growth.hp)) * (1 + unit.rank * 0.2);
+    let baseMp = (unit.baseMaxMp + (unit.level * 5 * growth.mp)) * (1 + unit.rank * 0.1);
+    let baseAtk = (unit.baseAtk + (unit.level * 2 * growth.atk)) * (1 + unit.rank * 0.2);
+    let baseDef = (5 + (unit.level * growth.def)) * (1 + unit.rank * 0.1);
+    let baseSpd = (10 + (unit.level * 0.5 * growth.spd));
+    let baseHit = 80 + growth.hit + (unit.level * 0.2);
+    let baseEva = 5 + growth.eva + (unit.level * 0.2);
+
+    if (unit.bonusStats) {
+        baseHp += unit.bonusStats.hp || 0;
+        baseAtk += unit.bonusStats.atk || 0;
+        baseSpd += unit.bonusStats.spd || 0;
+    }
+
+    // 장비 스탯 & 세트 효과 계산
+    let setCounts = {}; 
+
+    if (unit.equipment) {
+        Object.values(unit.equipment).forEach(item => {
+            if (item) {
+                const levelMult = 1 + (item.level * 0.1); 
+                const starMult = 1 + (item.star * 0.2); 
+                const totalMult = levelMult * starMult;
+
+                if (item.stat === 'atk') baseAtk += item.value * totalMult;
+                if (item.stat === 'hp') baseHp += item.value * totalMult;
+                if (item.stat === 'def') baseDef += item.value * totalMult;
+                if (item.stat === 'spd') baseSpd += item.value * totalMult;
+                if (item.stat === 'eva') baseEva += item.value * totalMult;
+                if (item.stat === 'mp') baseMp += item.value * totalMult;
+                
+                // 옵션
+                item.options?.forEach(opt => {
+                      const optVal = opt.val * levelMult;
+                      if (opt.type === 'atk') baseAtk += optVal;
+                      if (opt.type === 'hp') baseHp += optVal;
+                      if (opt.type === 'def') baseDef += optVal;
+                      if (opt.type === 'crit') baseHit += optVal; 
+                });
+
+                // 세트 카운트 (속성 장비만)
+                if (ITEM_TYPES[item.type].category === 'elemental' && item.element && item.element !== 'normal') {
+                    setCounts[item.element] = (setCounts[item.element] || 0) + 1;
+                }
+            }
+        });
+    }
+
+    // 세트 효과 (2/4/6)
+    Object.keys(setCounts).forEach(elem => {
+        const count = setCounts[elem];
+        if (count >= 2) {
+            baseAtk *= 1.1; // 2셋: 공/방 10%
+            baseDef *= 1.1;
+        }
+        if (count >= 4) {
+            baseHp *= 1.2; // 4셋: 체/마 20%
+            baseMp *= 1.2;
+        }
+        if (count >= 6) { 
+            baseAtk *= 1.3; // 6셋: 올스탯 30%
+            baseDef *= 1.3;
+            baseHp *= 1.3;
+            baseMp *= 1.3;
+            baseSpd *= 1.3;
+        }
+    });
+
+    if (unit.statusEffects) {
+        unit.statusEffects.forEach(ef => {
+            if(ef.type === 'atk_up') baseAtk *= 1.3;
+        });
+    }
+
+    // 세트 효과 활성화 여부
+    const activeSets = Object.keys(setCounts).filter(e => setCounts[e] >= 2);
+
+    return {
+        maxHp: Math.floor(baseHp),
+        maxMp: Math.floor(baseMp),
+        atk: Math.floor(baseAtk),
+        def: Math.floor(baseDef),
+        spd: Math.floor(baseSpd),
+        hit: Math.floor(baseHit),
+        eva: Math.floor(baseEva),
+        activeSets
+    };
+  };
+
+  const getAvailableSkills = (hero) => {
+      if (!hero) return [BASIC_ATTACK];
+
+      const jobData = JOB_TREE[hero.job];
+      const jobSkills = (jobData?.skills ?? []).map(s => ({
+        ...s,
+        id: `job:${hero.job}:${s.name}`,
+      }));
+
+      const elemSkills = (ELEMENT_SKILLS[hero.element] ?? [])
+        .filter(s => hero.level >= s.reqLv)
+        .map(s => ({
+          ...s,
+          id: `elem:${hero.element}:${s.name}`,
+        }));
+
+      return [BASIC_ATTACK, ...jobSkills, ...elemSkills];
+  };
+
+  const addLog = (text, type = 'normal') => {
+    setLogs(prev => [...prev, { text, type, id: Date.now() + Math.random() }]);
+  };
+
+  const showDamage = (targetId, text, color = 'text-white') => {
+       setFloatingTexts(prev => [...prev, { id: Date.now() + Math.random(), targetId, text, color }]);
+  };
+
+  const getCurrentTheme = () => STAGE_THEMES[Math.floor((stage - 1) / 10) % STAGE_THEMES.length];
+  const theme = getCurrentTheme();
+
+  // Low level experience curve helper
+  const getRequiredExp = (level) => {
+      if (level === 1) return 20;
+      if (level === 2) return 40;
+      if (level === 3) return 60;
+      if (level === 4) return 100;
+      return Math.floor(100 * Math.pow(1.2, level - 5 + 1)); // From level 5, scales up from 100 base
+  };
+
+  // --- Effects ---
+  useEffect(() => {
+    const savedData = localStorage.getItem('endlessRPG_save_v22'); // Version 22
+    if (savedData) {
+      try {
+          const data = JSON.parse(savedData);
+          setParty(data.party || []);
+          setBarracks(data.barracks || []); 
+          setInventory(data.inventory || []);
+          setGold(data.gold || 1000);
+          setStage(data.stage || 1);
+          setGems(data.gems || gems);
+          addLog("저장된 게임을 불러왔습니다.", "info");
+      } catch (e) {
+          recruitMember(true);
+      }
+    } else {
+        recruitMember(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (party.length > 0) {
+        localStorage.setItem('endlessRPG_save_v22', JSON.stringify({ party, barracks, inventory, gold, stage, gems }));
+    }
+  }, [party, barracks, inventory, gold, stage, gems]);
+
+  // Game Over Safety Check
+  useEffect(() => {
+      if (gameState === 'battle' && party.length > 0) {
+          const alive = party.some(p => p.hp > 0);
+          if (!alive) {
+              setGameState('defeat');
+          }
+      }
+  }, [party, gameState]);
+
+  useEffect(() => { if (logContainerRef.current) logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight; }, [logs]);
+  useEffect(() => { if (floatingTexts.length > 0) { const timer = setTimeout(() => setFloatingTexts(prev => prev.slice(1)), 800); return () => clearTimeout(timer); } }, [floatingTexts]);
+
+  useEffect(() => {
+      if (gameState === 'battle' && turn === 'enemy') {
+          const timer = setTimeout(() => enemyTurnExecute(), 1000);
+          return () => clearTimeout(timer);
+      }
+  }, [turn, gameState]);
+
+  // --- Battle System ---
+  const handleSkillSelect = (skill) => {
+    if (selectedHeroIndex === null) return;
+   
+    const hero = party[selectedHeroIndex];
+    const skillId = skill?.id ?? BASIC_ATTACK.id;
+    const heroCds = hero.skillCds ?? {};
+    
+    // MP 체크
+    if (hero.mp < (skill.mp ?? 0)) {
+      addLog("MP가 부족하여 기본 공격을 합니다.", "warning");
+      skill = BASIC_ATTACK;
+    }
+   
+    // 쿨타임 체크(기본 공격은 cd 없음)
+    const finalSkillId = skill.id ?? BASIC_ATTACK.id;
+    const finalCd = (hero.skillCds ?? {})[finalSkillId] ?? 0;
+    if (finalSkillId !== BASIC_ATTACK.id && finalCd > 0) {
+      addLog("쿨타임 중입니다!", "error");
+      return;
+    }
+   
+    setActionMode('skill');
+   
+    if (['aoe', 'heal_all', 'buff_all', 'buff_self'].includes(skill.type)) {
+      executeSkill(null, skill);
+    } else {
+      setTargetingMode(true);
+      setSelectedSkill(skill);
+    }
+  };
+
+  const handleDefend = () => {
+      if (selectedHeroIndex === null) return;
+      const newParty = [...party];
+      newParty[selectedHeroIndex].isDefending = true;
+      newParty[selectedHeroIndex].hasActed = true;
+      setParty(newParty);
+      
+      addLog(`${newParty[selectedHeroIndex].name} 방어 태세!`, 'info');
+      showDamage(newParty[selectedHeroIndex].id, "방어", "text-blue-400");
+      endTurnCheck(newParty);
+  };
+
+  const handleWait = () => {
+      if (selectedHeroIndex === null) return;
+      const newParty = [...party];
+      const hero = newParty[selectedHeroIndex];
+      const stats = getUnitStats(hero);
+      
+      const isInsight = Math.random() < 0.3;
+      if (isInsight) {
+          hero.mp = Math.min(stats.maxMp, hero.mp + Math.floor(stats.maxMp * 0.3));
+          if(!hero.statusEffects) hero.statusEffects = [];
+          hero.statusEffects.push({type: 'atk_up', duration: 2});
+          addLog(`${hero.name} 통찰력 있는 휴식! (공격력 증가)`, 'important');
+          showDamage(hero.id, "통찰!", "text-yellow-300 text-lg font-bold");
+      } else {
+          hero.mp = Math.min(stats.maxMp, hero.mp + Math.floor(stats.maxMp * 0.15));
+          addLog(`${hero.name} 휴식... (MP 회복)`, 'info');
+          showDamage(hero.id, "휴식", "text-blue-300");
+      }
+      
+      hero.hasActed = true;
+      setParty(newParty);
+      endTurnCheck(newParty);
+  };
+
+  const handleItemUse = (itemUniqueId) => {
+      if (selectedHeroIndex === null) return;
+      const heroIndex = selectedHeroIndex;
+      const hero = party[heroIndex];
+      const itemIndex = inventory.findIndex(i => i.uniqueId === itemUniqueId);
+      
+      if (itemIndex === -1) return;
+      const item = inventory[itemIndex];
+      const stats = getUnitStats(hero);
+      
+      const newParty = [...party];
+      const newInventory = [...inventory];
+      
+      if (item.potionType === 'hp') {
+          newParty[heroIndex].hp = Math.min(stats.maxHp, newParty[heroIndex].hp + item.value);
+          showDamage(hero.id, `+${item.value}`, "text-green-400");
+      } else if (item.potionType === 'mp') {
+          newParty[heroIndex].mp = Math.min(stats.maxMp, newParty[heroIndex].mp + item.value);
+          showDamage(hero.id, `+${item.value} MP`, "text-blue-400");
+      }
+      
+      newParty[heroIndex].hasActed = true;
+      newInventory.splice(itemIndex, 1);
+      
+      setParty(newParty);
+      setInventory(newInventory);
+      
+      addLog(`${hero.name} ${item.name} 사용!`, 'success');
+      setActionMode(null);
+      endTurnCheck(newParty);
+  };
+
+  const executeSkill = (targetId, skill) => {
+    const hero = party[selectedHeroIndex];
+    const heroStats = getUnitStats(hero);
+   
+    const skillId = skill?.id ?? BASIC_ATTACK.id;
+    const mpCost = skill?.mp ?? 0;
+   
+    let nextParty = party.map((p, idx) => {
+      if (idx !== selectedHeroIndex) return p;
+   
+      const nextCds = { ...(p.skillCds ?? {}) };
+      let nextMp = p.mp;
+      if (skillId !== BASIC_ATTACK.id) {
+        nextMp = Math.max(0, p.mp - mpCost);
+        nextCds[skillId] = (skill.cooldown ?? 0) + 1; 
+      }
+   
+      return { ...p, mp: nextMp, hasActed: true, isDefending: false, skillCds: nextCds };
+    });
+   
+    const aliveEnemies = enemies.filter(e => e.hp > 0);
+    let targets = [];
+   
+    if (skill.type === 'single') {
+      const t = enemies.find(e => e.id === targetId);
+      if (t && t.hp > 0) targets = [t.id];
+    } else if (skill.type === 'aoe') {
+      targets = aliveEnemies.map(e => e.id);
+    }
+   
+    let nextEnemies = enemies;
+   
+    if (skill.type === 'heal_all' || skill.type === 'buff_all') {
+      nextParty = nextParty.map(p => {
+        if (p.hp <= 0) return p;
+        if (skill.type === 'heal_all') {
+          const heal = Math.floor(heroStats.atk * 1.5);
+          const pStats = getUnitStats(p);
+          showDamage(p.id, `+${heal}`, 'text-green-400');
+          return { ...p, hp: Math.min(pStats.maxHp, p.hp + heal) };
+        } else {
+          const eff = { type: 'atk_up', duration: 3 };
+          showDamage(p.id, "버프!", 'text-blue-300');
+          return { ...p, statusEffects: [...(p.statusEffects ?? []), eff] };
+        }
+      });
+      addLog(`${hero.name}의 ${skill.name}!`, 'success');
+    }
+   
+    if (skill.type === 'buff_self') {
+      nextParty = nextParty.map((p, idx) => {
+        if (idx !== selectedHeroIndex) return p;
+        const eff = { type: 'atk_up', duration: 3 };
+        showDamage(p.id, "버프!", 'text-blue-300');
+        return { ...p, statusEffects: [...(p.statusEffects ?? []), eff] };
+      });
+      addLog(`${hero.name}의 ${skill.name}!`, 'success');
+    }
+   
+    if (skill.type === 'heal_single') {
+      const target = nextParty.find(p => p.id === targetId); // Modified: Find target by ID
+      if (target && target.hp > 0) {
+        const heal = Math.floor(heroStats.atk * 2.0);
+        const tStats = getUnitStats(target);
+        showDamage(target.id, `+${heal}`, 'text-green-400');
+        nextParty = nextParty.map(p =>
+          p.id === target.id ? { ...p, hp: Math.min(tStats.maxHp, p.hp + heal) } : p
+        );
+        addLog(`${hero.name}의 ${skill.name}!`, 'success');
+      }
+    }
+   
+    if (targets.length > 0) {
+      nextEnemies = enemies.map(e => {
+        if (!targets.includes(e.id) || e.hp <= 0) return e;
+        const tStats = getUnitStats(e);
+   
+        // HIT CHANCE & EVASION LOGIC (Updated for lower evasion chance)
+        // Base 90% hit chance instead of 70%
+        const hitChance = Math.max(5, Math.min(100, 90 + (heroStats.hit - tStats.eva)));
+        const isHit = Math.random() * 100 < hitChance;
+        if (!isHit) {
+          showDamage(e.id, "회피!", "text-gray-400 font-bold");
+          return e;
+        }
+   
+        let dmg = Math.floor(heroStats.atk * (skill.dmgRate ?? 1) * randomInt(90, 110) / 100);
+        const mitigation = 100 / (100 + tStats.def);
+        dmg = Math.floor(dmg * mitigation);
+   
+        if (skill.ignoreDef) dmg = Math.floor(heroStats.atk * (skill.dmgRate ?? 1));
+   
+        if (hero.element !== 'normal' && e.element !== 'normal') {
+          if (WEAKNESS_MAP[hero.element] === e.element) dmg = Math.floor(dmg * 1.5);
+          else if (WEAKNESS_MAP[e.element] === hero.element) dmg = Math.floor(dmg * 0.8);
+        }
+   
+        const r = Math.random();
+        const isCrit = r < 0.2;
+        const isHyperCrit = r < 0.05;
+        if (isHyperCrit) dmg = Math.floor(dmg * 2.5);
+        else if (isCrit) dmg = Math.floor(dmg * 1.5);
+   
+        let dmgColor = 'text-white text-xl';
+        if (isCrit) dmgColor = 'text-yellow-400 text-2xl font-bold';
+        if (isHyperCrit) dmgColor = 'text-red-500 text-3xl font-extrabold animate-bounce';
+   
+        // Multi-hit logic with visual delay
+        if (skill.type === 'multi' && skill.hitCount && skill.hitCount > 1) {
+             // 0.8배 보정 후 소수점 버림 처리 시 0이 되는 문제 해결 (최소 1 보장)
+             let perHitDmg = Math.floor(dmg * 0.8); 
+             if (perHitDmg < 1 && dmg > 0) perHitDmg = 1; 
+             
+             const totalDmg = perHitDmg * skill.hitCount;
+             
+             // Schedule multiple visual popups
+             for(let k=0; k<skill.hitCount; k++) {
+                 setTimeout(() => {
+                     showDamage(e.id, perHitDmg, dmgColor);
+                 }, k * 200); // 200ms delay between hits
+             }
+             dmg = totalDmg; // Update actual damage to total
+        } else {
+             showDamage(e.id, dmg, dmgColor);
+        }
+
+        return { ...e, hp: e.hp - dmg };
+      });
+      addLog(`${hero.name}의 ${skill.name}!`, 'normal');
+    }
+   
+    setParty(nextParty);
+    setEnemies(nextEnemies);
+   
+    setTargetingMode(false);
+    setSelectedSkill(null);
+    setSelectedHeroIndex(null);
+    setActionMode(null);
+   
+    checkBattleEnd(nextParty, nextEnemies);
+    endTurnCheck(nextParty);
+  };
+
+  const endTurnCheck = (currentParty) => {
+      const aliveHeroes = currentParty.filter(p => p.hp > 0);
+      if (aliveHeroes.every(p => p.hasActed)) {
+          setTimeout(() => setTurn('enemy'), 500);
+      }
+  };
+
+  const enemyTurnExecute = () => {
+    let currentParty = [...party];
+    let currentEnemies = [...enemies];
+    const aliveEnemies = currentEnemies.filter(e => e.hp > 0);
+    const aliveHeroes = currentParty.filter(p => p.hp > 0);
+
+    if (aliveHeroes.length === 0) { setGameState('defeat'); return; }
+    if (aliveEnemies.length === 0) { return; } 
+
+    aliveEnemies.forEach((enemy, i) => {
+        if (currentParty.filter(p => p.hp > 0).length === 0) return;
+        
+        const target = currentParty.filter(p => p.hp > 0)[randomInt(0, currentParty.filter(p => p.hp > 0).length - 1)];
+        const stats = getUnitStats(enemy);
+        const tStats = getUnitStats(target);
+
+        // Updated Hit Chance Base to 90 (Low evasion probability)
+        const hitChance = Math.max(5, Math.min(100, 90 + (stats.hit - tStats.eva)));
+        if (Math.random() * 100 < hitChance) {
+            let dmg = Math.floor(stats.atk * randomInt(80, 120) / 100);
+            dmg = Math.floor(dmg * (100 / (100 + tStats.def)));
+            
+            const tIdx = currentParty.findIndex(p => p.id === target.id);
+            
+            if (currentParty[tIdx].isDefending) {
+                const isCounter = Math.random() < 0.4;
+                if (isCounter) {
+                    dmg = 0; 
+                    showDamage(target.id, "반격!", "text-cyan-400 font-bold");
+                    const counterDmg = Math.floor(tStats.atk * 0.8);
+                    const eIdx = currentEnemies.findIndex(e=>e.id===enemy.id);
+                    if(eIdx !== -1) {
+                        currentEnemies[eIdx].hp -= counterDmg;
+                        showDamage(enemy.id, counterDmg, "text-yellow-400");
+                    }
+                } else {
+                    dmg = Math.floor(dmg * 0.5);
+                    showDamage(target.id, "방어", "text-blue-300 text-xs");
+                }
+            }
+
+            if (dmg > 0) {
+                if (enemy.element !== 'normal' && target.element !== 'normal') {
+                    if (WEAKNESS_MAP[enemy.element] === target.element) {
+                        dmg = Math.floor(dmg * 1.5);
+                        showDamage(target.id, "약점!", "text-red-300 text-xs mb-4");
+                    } else if (WEAKNESS_MAP[target.element] === enemy.element) {
+                        dmg = Math.floor(dmg * 0.8);
+                    }
+                }
+                currentParty[tIdx].hp -= dmg;
+                showDamage(target.id, dmg, 'text-red-500');
+            }
+        } else {
+            showDamage(target.id, "회피!", "text-blue-300");
+        }
+    });
+
+    currentParty = currentParty.map(p => {
+        let newEffects = [];
+        if (p.statusEffects) {
+          p.statusEffects.forEach(e => {
+            if (e.duration > 1) newEffects.push({ ...e, duration: e.duration - 1 });
+          });
+        }
+       
+        const nextCds = Object.fromEntries(
+          Object.entries(p.skillCds ?? {}).map(([k, cd]) => [k, Math.max(0, cd - 1)])
+        );
+       
+        return {
+          ...p,
+          hasActed: false,
+          isDefending: false,
+          skillCds: nextCds,
+          mp: Math.min(getUnitStats(p).maxMp, p.mp + 5),
+          statusEffects: newEffects
+        };
+      });
+
+    setParty(currentParty);
+    setEnemies(currentEnemies);
+    setTurn('player');
+    checkBattleEnd(currentParty, currentEnemies);
+};
+
+  const checkBattleEnd = (currentParty, currentEnemies) => {
+      const heroesAlive = currentParty.some(p => p.hp > 0);
+      const enemiesAlive = currentEnemies.some(e => e.hp > 0);
+
+      if (!enemiesAlive) {
+          const isBoss = stage % 10 === 0;
+          const isMidBoss = stage % 10 === 5;
+          const multiplier = isBoss ? 5 : (isMidBoss ? 3 : 1);
+
+          const rewardGold = stage * 50 * multiplier;
+          // Base EXP calculation adjusted for better scaling
+          // 기본 보상 상향: 스테이지 * 50 + (스테이지^1.6) * 5 (후반부 보정)
+          const baseRewardExp = (stage * 50 + Math.floor(Math.pow(stage, 1.6) * 5)) * multiplier;
+          
+          setGold(g => g + rewardGold);
+          
+          const aliveCount = currentParty.filter(a => a.hp > 0).length;
+
+          const newParty = currentParty.map(p => {
+              if (p.hp <= 0) return p;
+              
+              // --- 레벨 격차 보정 로직 (Level Gap Adjustment) ---
+              let levelDiff = stage - p.level;
+              let gapMultiplier = 1.0;
+
+              if (levelDiff > 0) {
+                  // 몬스터 레벨이 더 높을 때: 격차 1당 30% 추가 보너스 (최대 5배)
+                  // 격차가 5레벨 이상이면 50% 추가 가속
+                  const bonusPerLevel = levelDiff > 5 ? 0.5 : 0.3;
+                  gapMultiplier = 1 + (levelDiff * bonusPerLevel);
+              } else if (levelDiff < 0) {
+                  // 유저 레벨이 더 높을 때: 패널티 (천천히 성장)
+                  // 격차 1당 10% 감소 (최소 10%는 유지)
+                  gapMultiplier = Math.max(0.1, 1 - (Math.abs(levelDiff) * 0.1));
+              }
+
+              let individualExp = Math.floor((baseRewardExp / Math.max(1, aliveCount)) * gapMultiplier);
+              // 최소 1 경험치 보장
+              individualExp = Math.max(1, individualExp);
+
+              let newP = {...p, exp: p.exp + individualExp};
+              const stats = getUnitStats(newP);
+              newP.hp = Math.min(stats.maxHp, newP.hp + Math.floor(stats.maxHp * 0.2));
+              newP.mp = Math.min(stats.maxMp, newP.mp + Math.floor(stats.maxMp * 0.2));
+
+              if (newP.exp >= newP.maxExp) {
+                  newP.level++; newP.exp -= newP.maxExp; 
+                  newP.maxExp = getRequiredExp(newP.level); // Use helper for next level exp
+                  setLevelUpQueue(prev => [...prev, { heroId: newP.id, name: newP.name, options: generateLevelUpOptions() }]);
+              }
+              
+              const jobData = JOB_TREE[newP.job];
+              if (jobData && jobData.next.length > 0) {
+                  if ((newP.level >= 5 && newP.job === '초보') || 
+                      (newP.level >= 16 && ['전사','창지기','검사','마법사','궁수','성직자'].includes(newP.job)) || 
+                      (newP.level >= 32 && ['수호자','랜서','기사','위저드','레인저','프리스트'].includes(newP.job))) {
+                      if (!jobChangeQueue.some(q => q.heroId === newP.id)) {
+                          setJobChangeQueue(prev => [...prev, { heroId: newP.id, currentJob: newP.job, options: jobData.next }]);
+                      }
+                  }
+              }
+
+              return newP;
+          });
+          setParty(newParty);
+          
+          currentEnemies.forEach(e => {
+              if(e.hp <= 0) {
+                  const rankInfo = MONSTER_RANKS[e.rank] || MONSTER_RANKS.normal;
+                  if (Math.random() < rankInfo.gemChance) {
+                      let dropElement = e.element;
+                      // Normal monster drops random element gem based on available gems
+                      if (dropElement === 'normal') {
+                          const gemTypes = Object.keys(gems).filter(k => k !== 'normal'); // Filter out 'normal' if exists, though keys are element names
+                          dropElement = gemTypes[randomInt(0, gemTypes.length - 1)];
+                      }
+                      
+                      setGems(prev => ({...prev, [dropElement]: prev[dropElement] + 1}));
+                      addLog(`[${ELEMENTS[dropElement].name}] 보석 획득!`, 'success');
+                  }
+              }
+          });
+
+          addLog(`전투 승리! (+${formatNumber(rewardGold)}G) 체력/마나가 회복되었습니다.`, "important");
+          handleDrop(isBoss ? 3 : (isMidBoss ? 2 : 1), isBoss, isMidBoss);
+
+          setStage(s => s + 1);
+          setGameState('menu');
+      } else if (!heroesAlive) {
+          setGameState('defeat');
+      }
+  };
+
+  const handleDrop = (count = 1, isBoss = false, isMidBoss = false) => {
+      for(let i=0; i<count; i++) {
+          const dropChance = isBoss ? 1.0 : (isMidBoss ? 0.8 : 0.4);
+          if (Math.random() > dropChance) continue;
+          
+          const r = Math.random();
+          
+          if (r < 0.2) { 
+              const potionKeys = Object.keys(POTIONS);
+              const pKey = potionKeys[randomInt(0, potionKeys.length-1)];
+              const potion = POTIONS[pKey];
+              const newItem = {
+                  id: Date.now() + i, uniqueId: Math.random().toString(36),
+                  name: potion.name, type: 'potion', rarity: 'normal', value: potion.value, potionType: potion.type
+              };
+              setInventory(prev => [...prev, newItem]);
+              addLog(`[물약] ${potion.name} 획득!`, 'success');
+              continue;
+          }
+
+          let rarityKey = 'common';
+          const rarityRoll = Math.random();
+          
+          const stageBonus = Math.floor(stage / 10) * 0.1; // Increase higher rarity chances
+          
+          if (rarityRoll < RARITY.ancient.prob + stageBonus/100) rarityKey = 'ancient';
+          else if (rarityRoll < RARITY.mythic.prob + stageBonus/50) rarityKey = 'mythic';
+          else if (rarityRoll < RARITY.legendary.prob + stageBonus/10) rarityKey = 'legendary';
+          else if (rarityRoll < RARITY.epic.prob + stageBonus/5) rarityKey = 'epic';
+          else if (rarityRoll < RARITY.rare.prob + stageBonus/2) rarityKey = 'rare';
+          else if (rarityRoll < RARITY.uncommon.prob + stageBonus) rarityKey = 'uncommon';
+          else rarityKey = 'common';
+
+          // Ensure boss gets better loot
+          if (isBoss && (rarityKey === 'common' || rarityKey === 'uncommon')) rarityKey = 'rare';
+
+          const typeKey = Object.keys(ITEM_TYPES)[randomInt(0, 8)]; // All 9 slots
+          const typeData = ITEM_TYPES[typeKey];
+          
+          const avgLv = Math.floor(party.reduce((sum, p) => sum + p.level, 0) / party.length);
+          const itemLv = Math.max(1, avgLv + randomInt(-5, 5));
+          const baseStat = (typeKey === 'weapon' ? 5 : 20) * (1 + itemLv * 0.1);
+          const val = Math.floor(baseStat * RARITY[rarityKey].bonus);
+
+          // Element Logic
+          let element = 'normal';
+          if (typeData.category === 'elemental') {
+             const keys = Object.keys(ELEMENTS).filter(k => k !== 'normal');
+             element = keys[randomInt(0, keys.length - 1)];
+          }
+
+          // Options Logic
+          let options = [];
+          const maxOpts = typeData.category === 'elemental' ? 3 : 2;
+          let optCount = 1;
+          // Randomly decide option count based on rarity too
+          if (rarityKey !== 'common') optCount = Math.min(maxOpts, randomInt(1, maxOpts) + (rarityKey==='ancient'||rarityKey==='mythic'?1:0));
+          if (optCount > maxOpts) optCount = maxOpts;
+
+          for(let j=0; j<optCount; j++) {
+              const optType = OPTION_TYPES[randomInt(0, 3)];
+              const optVal = Math.max(1, Math.floor(val * 0.1 * (1 + itemLv*0.05)));
+              options.push({ type: optType.type, name: optType.name, val: optVal });
+          }
+
+          // Job Restriction Logic
+          let reqJobType = null;
+          if (itemLv >= 5 && typeKey !== 'potion') { 
+             const types = ['warrior', 'mage', 'archer', 'cleric'];
+             if (Math.random() < 0.7) { 
+                reqJobType = types[randomInt(0, 3)];
+             }
+          }
+
+          const newItem = {
+              id: Date.now() + i, uniqueId: Math.random().toString(36),
+              name: `${RARITY[rarityKey].name} ${typeData.name}`, 
+              type: typeKey, value: val, rarity: rarityKey, 
+              level: itemLv, star: 0,
+              element, // Elemental attribute
+              options, stat: typeData.stat,
+              reqJobType // Added job requirement
+          };
+          setInventory(prev => [...prev, newItem]);
+          addLog(`[${RARITY[rarityKey].name}] ${newItem.name} (+${itemLv}) 획득!`, "important");
+      }
+  };
+
+  const handleSynthesis = (item) => {
+      if (item.type === 'weapon') { addLog("무기는 합성할 수 없습니다.", "error"); return; }
+
+      const duplicateIdx = inventory.findIndex(i => i.uniqueId !== item.uniqueId && i.name === item.name && i.rarity === item.rarity && i.level === item.level);
+      if (duplicateIdx !== -1) {
+          const newInv = [...inventory];
+          newInv.splice(duplicateIdx, 1);
+          const targetItemIdx = newInv.findIndex(i => i.uniqueId === item.uniqueId);
+          if (targetItemIdx !== -1) {
+              newInv[targetItemIdx] = { ...newInv[targetItemIdx], star: newInv[targetItemIdx].star + 1, value: Math.floor(newInv[targetItemIdx].value * 1.1) };
+              setInventory(newInv);
+              addLog(`합성 성공! ${item.name} ★${item.star + 1}`, 'important');
+          }
+      } else {
+          addLog("합성 재료(동일 아이템)가 없습니다.", "error");
+      }
+  };
+
+  const generateLevelUpOptions = () => {
+      const opts = [
+          { type: 'atk', name: '공격력 +5', val: 5 },
+          { type: 'hp', name: '체력 +20', val: 20 },
+          { type: 'spd', name: '속도 +2', val: 2 },
+          { type: 'hit', name: '명중 +3', val: 3 },
+          { type: 'def', name: '방어 +3', val: 3 },
+      ];
+      return opts.sort(() => 0.5 - Math.random()).slice(0, 3);
+  };
+
+  const handleLevelUpSelect = (heroId, option) => {
+      setParty(prev => prev.map(p => {
+          if (p.id !== heroId) return p;
+          const newStats = { ...(p.bonusStats || {}) };
+          newStats[option.type] = (newStats[option.type] || 0) + option.val;
+          return { ...p, bonusStats: newStats, hp: getUnitStats(p).maxHp }; 
+      }));
+      setLevelUpQueue(prev => prev.filter(q => q.heroId !== heroId));
+      addLog("능력치가 상승했습니다.", "success");
+  };
+
+  const handleJobChange = (heroId, newJob) => {
+      setParty(prev => prev.map(p => {
+          if (p.id !== heroId) return p;
+          const elemName = p.element !== 'normal' ? ELEMENTS[p.element].name : '';
+          const prefix = p.rank === 0 ? '' : (p.rank === 1 ? '' : (p.rank === 2 ? '진' : (p.rank === 3 ? '초' : '신')));
+          const newName = `${prefix} ${elemName} ${newJob}`.trim();
+          
+          return { ...p, job: newJob, name: newName, skillCds: {} }; 
+      }));
+      setJobChangeQueue(prev => prev.filter(q => q.heroId !== heroId));
+      addLog("직업 전직 완료!", "important");
+  };
+
+  const startBattleInit = () => {
+      const isBoss = stage % 10 === 0;
+      const isMidBoss = stage % 10 === 5;
+      
+      const enemyCount = isBoss ? 1 : (isMidBoss ? 1 : randomInt(1, Math.min(4, 1 + Math.floor(stage / 3))));
+      const newEnemies = [];
+      
+      for(let i=0; i<enemyCount; i++) {
+          const keys = Object.keys(ELEMENTS).filter(k=>k!=='normal');
+          const eElement = keys[randomInt(0, keys.length - 1)];
+          const scale = 1 + (stage * 0.15) + (isBoss ? 2 : (isMidBoss ? 1 : 0));
+          
+          let name = MONSTER_NAMES[Math.min(MONSTER_NAMES.length - 1, Math.floor((stage - 1) / 3))];
+          if (isBoss) name = BOSS_NAMES[randomInt(0, BOSS_NAMES.length-1)];
+          if (isMidBoss) name = MID_BOSS_NAMES[randomInt(0, MID_BOSS_NAMES.length-1)];
+
+          const rankKeys = Object.keys(MONSTER_RANKS);
+          let rank = 'normal';
+          const r = Math.random();
+          if (r < 0.05) rank = 'calamity';
+          else if (r < 0.15) rank = 'abyss';
+          else if (r < 0.3) rank = 'profound';
+          else if (r < 0.5) rank = 'peculiar';
+          
+          const rankInfo = MONSTER_RANKS[rank];
+
+          newEnemies.push({
+              id: Date.now() + i, 
+              name: `[${rankInfo.name}] ${ELEMENTS[eElement].name} ${name}`, 
+              job: '전사', element: eElement, rank: rank,
+              baseMaxHp: 40*scale * rankInfo.statMult * (isBoss?5: (isMidBoss?2:1)), 
+              hp: 40*scale * rankInfo.statMult * (isBoss?5: (isMidBoss?2:1)), 
+              baseAtk: 10*scale * rankInfo.statMult * (isBoss?1.5:1), 
+              baseMaxMp: 10, mp:10, 
+              level: stage, hasActed: false, isBoss, isMidBoss,
+              goldReward: 20*scale * rankInfo.statMult * (isBoss?5:1), 
+              expReward: 15*scale * rankInfo.statMult * (isBoss?5:1)
+          });
+      }
+      setEnemies(newEnemies);
+      setParty(prev => prev.map(p => {
+        const nextCds = Object.fromEntries(
+            Object.entries(p.skillCds ?? {}).map(([k, cd]) => [k, Math.max(0, cd - 1)])
+        );
+        return {...p, hasActed: false, isDefending: false, skillCds: nextCds}
+      }));
+      setGameState('battle');
+      setTurn('player');
+      addLog(isBoss ? "!!! 보스 출현 !!!" : (isMidBoss ? "!! 강력한 적 출현 !!" : "전투 시작!"), "important");
+  };
+
+  const recruitMember = (isInit = false) => {
+      const cost = 200 + (party.length * 100);
+      if (!isInit && gold < cost) { addLog(`골드가 부족합니다 (${cost}G)`, "error"); return; }
+      
+      if (!isInit) setGold(g => g - cost);
+      
+      const avgLevel = party.length > 0 ? Math.floor(party.reduce((a,b)=>a+b.level,0)/party.length) : 1;
+      // Init character: Level 1
+      // Recruited: Avg +/- 5
+      const newLevel = isInit ? 1 : Math.max(1, avgLevel + randomInt(-5, 5));
+
+      let job = '초보';
+      let name = `초보 뺑꾸`;
+      if (newLevel >= 5) { // Changed to Level 5
+          const basicJobs = ['전사', '창지기', '검사', '마법사', '궁수', '성직자'];
+          job = basicJobs[randomInt(0, basicJobs.length - 1)];
+          name = `${job} 뺑꾸`;
+      }
+
+      const newHero = {
+          id: Date.now(), name, job, element: 'normal',
+          baseMaxHp: 100, baseMaxMp: 50, baseAtk: 10, level: newLevel, exp: 0, 
+          maxExp: getRequiredExp(newLevel), // Use helper for correct maxExp
+          rank: 0,
+          hp: 100, mp: 50, hasActed: false, isDefending: false, skillCds: {}, equipment: {weapon:null, head:null, body:null, legs:null, feet:null, ring:null, necklace:null, belt:null, gloves:null, cape:null}
+      };
+
+      if (party.length < 6) {
+          setParty(prev => [...prev, newHero]);
+          if(!isInit) addLog(`${newHero.name} (Lv.${newLevel}) 영입!`, "success");
+      } else {
+          setBarracks(prev => [...prev, newHero]);
+          if(!isInit) addLog(`${newHero.name} (Lv.${newLevel}) 대기소로 영입됨!`, "success");
+      }
+  };
+
+  const swapPartyMember = (partyIdx, barracksIdx) => {
+      const newParty = [...party];
+      const newBarracks = [...barracks];
+      
+      const pMember = newParty[partyIdx];
+      const bMember = newBarracks[barracksIdx];
+      
+      newParty[partyIdx] = bMember;
+      newBarracks[barracksIdx] = pMember;
+      
+      setParty(newParty);
+      setBarracks(newBarracks);
+      addLog("파티 멤버 교체 완료", "info");
+  };
+
+  const moveFromBarracksToParty = (barracksIdx) => {
+      if (party.length >= 6) return;
+      const newBarracks = [...barracks];
+      const member = newBarracks[barracksIdx];
+      newBarracks.splice(barracksIdx, 1);
+      
+      setBarracks(newBarracks);
+      setParty(prev => [...prev, member]);
+      addLog(`${member.name} 파티 합류`, "info");
+  };
+
+  const moveFromPartyToBarracks = (partyIdx) => {
+      if (party.length <= 1) { addLog("최소 1명의 파티원은 있어야 합니다.", "error"); return; }
+      const newParty = [...party];
+      const member = newParty[partyIdx];
+      newParty.splice(partyIdx, 1);
+      
+      setParty(newParty);
+      setBarracks(prev => [...prev, member]);
+      addLog(`${member.name} 대기소 이동`, "info");
+  };
+
+  const dismissMember = (heroId, from) => {
+      if (from === 'party') {
+          if (party.length <= 1) { addLog("최소 1명의 파티원은 있어야 합니다.", "error"); return; }
+          setParty(prev => prev.filter(p => p.id !== heroId));
+      } else {
+          setBarracks(prev => prev.filter(p => p.id !== heroId));
+      }
+      addLog("동료를 떠나보냈습니다.", "info");
+  };
+
+  const retryFloor = () => {
+      const cost = Math.floor(gold * 0.1);
+      if (gold < cost) { addLog("골드가 부족하여 마을로 귀환합니다.", "error"); setStage(Math.max(1, stage-5)); setGameState('menu'); return; }
+      setGold(g => g - cost);
+      setParty(prev => prev.map(p => {
+          const stats = getUnitStats(p);
+          return { ...p, hp: Math.floor(stats.maxHp * 0.5), hasActed: false };
+      }));
+      addLog(`재도전! (-${cost}G)`, "important");
+      startBattleInit(); 
+  };
+
+  const returnTown = () => {
+      setParty(prev => prev.map(p => ({ ...p, hp: p.hp <= 0 ? 0 : 1, hasActed: false })));
+      setGameState('menu');
+  };
+
+  const buyPotion = (key) => {
+      const potion = POTIONS[key];
+      if (gold < potion.cost) { addLog("골드가 부족합니다.", "error"); return; }
+      setGold(g => g - potion.cost);
+      const newItem = {
+          id: Date.now(), uniqueId: Math.random().toString(36),
+          name: potion.name, type: 'potion', rarity: 'normal', value: potion.value, potionType: potion.type
+      };
+      setInventory(prev => [...prev, newItem]);
+      addLog(`${potion.name} 구매 완료!`, "success");
+  };
+
+  const handleGamble = () => {
+      if (gold < betAmount) { addLog("골드가 부족합니다!", "error"); return; }
+      
+      const result = Math.random() < 0.5 ? 'odd' : 'even';
+      const win = result === gambleChoice;
+      
+      if (win) {
+          const profit = Math.floor(betAmount * 1.95);
+          setGold(g => g + profit);
+          addLog(`[${result==='odd'?'홀':'짝'}] 적중! +${profit}G`, 'success');
+      } else {
+          setGold(g => g - betAmount);
+          addLog(`[${result==='odd'?'홀':'짝'}] 실패... -${betAmount}G`, 'error');
+      }
+  };
+
+  const equipItem = (heroIndex, item) => {
+    const newParty = [...party]; const hero = newParty[heroIndex];
+    
+    // Check Job Requirement
+    const heroJobType = getJobType(hero.job);
+    if (item.reqJobType && item.reqJobType !== heroJobType && heroJobType !== 'novice') {
+         addLog(`착용 불가! (${JOB_TYPE_NAMES[item.reqJobType]} 전용)`, 'error');
+         return;
+    }
+
+    const oldItem = hero.equipment[item.type];
+    if (oldItem) setInventory(prev => [...prev, oldItem]);
+    hero.equipment[item.type] = item;
+    setInventory(prev => prev.filter(i => i.uniqueId !== item.uniqueId));
+    setParty(newParty);
+  };
+
+  const unequipItem = (heroIndex, slot) => {
+    const newParty = [...party];
+    const hero = newParty[heroIndex];
+    const item = hero.equipment[slot];
+    if (!item) return;
+    
+    setInventory(prev => [...prev, item]);
+    hero.equipment[slot] = null;
+    setParty(newParty);
+    addLog(`${hero.name}: ${item.name} 해제`, 'info');
+  };
+  
+  const sellItem = (item) => {
+      setGold(g => g + Math.floor(item.value * (item.type === 'potion' ? 0.2 : 0.5))); 
+      setInventory(prev => prev.filter(i => i.uniqueId !== item.uniqueId));
+  };
+
+  // --- Evolution Logic (Gem based) ---
+  const handleEvolve = (targetElement) => {
+      if (manageHeroId === null) return;
+      const heroIndex = party.findIndex(p => p.id === manageHeroId);
+      if (heroIndex === -1) return;
+      
+      const hero = party[heroIndex];
+      if (hero.rank > 0 && targetElement && targetElement !== hero.element) {
+          addLog("이미 속성이 정해져 있어 변경할 수 없습니다.", "error");
+          return;
+      }
+
+      const cost = hero.rank === 0 ? 1 : (hero.rank === 1 ? 3 : 5); 
+      const requiredGem = hero.rank === 0 ? targetElement : hero.element;
+      
+      if (gems[requiredGem] < cost) { addLog(`${ELEMENTS[requiredGem].name} 보석이 부족합니다.`, 'error'); return; }
+      
+      setGems(prev => ({...prev, [requiredGem]: prev[requiredGem] - cost}));
+      
+      const newParty = [...party];
+      const newHero = { ...hero };
+      
+      if (hero.rank === 0) {
+          newHero.rank = 1;
+          newHero.element = targetElement;
+          newHero.name = `${ELEMENTS[targetElement].name} ${newHero.job}`;
+      } else {
+          newHero.rank += 1;
+          const prefix = newHero.rank === 2 ? '진' : (newHero.rank === 3 ? '초' : '신');
+          newHero.name = `${prefix} ${ELEMENTS[newHero.element].name} ${newHero.job}`;
+      }
+      
+      newParty[heroIndex] = newHero;
+      setParty(newParty);
+      addLog(`${newHero.name} 진화 성공!`, 'important');
+  };
+
+  const healPartyInInn = () => {
+      if (gold < 100) { addLog("골드가 부족합니다.", "error"); return; }
+      setGold(g => g - 100);
+      let healedCount = 0;
+      setParty(p => p.map(h => { 
+          if(h.hp <= 0) return h; 
+          const stats = getUnitStats(h); 
+          healedCount++;
+          return { ...h, hp: stats.maxHp, mp: stats.maxMp }; 
+      }));
+      addLog(`생존한 ${healedCount}명의 동료가 회복되었습니다.`, "success");
+  };
+
+  const reviveHero = (heroId) => {
+      const hero = party.find(p => p.id === heroId);
+      if (!hero) return;
+      const cost = hero.level * 50; 
+      if (gold < cost) { addLog("골드가 부족합니다.", "error"); return; }
+      setGold(g => g - cost);
+      setParty(prev => prev.map(p => {
+          if (p.id !== heroId) return p;
+          const stats = getUnitStats(p);
+          return { ...p, hp: Math.floor(stats.maxHp * 0.5) }; 
+      }));
+      addLog(`${hero.name} 부활 완료!`, "success");
+  };
+
+  const UnitCard = ({ unit, isPlayer, onClick, isSelected, isTarget }) => {
+      const stats = getUnitStats(unit);
+      
+      const safePercent = (val, max) => {
+          if (!max || max === 0) return 0;
+          const p = (val / max) * 100;
+          return isNaN(p) ? 0 : Math.max(0, Math.min(100, p));
+      };
+
+      const hpPer = safePercent(unit.hp, stats.maxHp);
+      const mpPer = safePercent(unit.mp, stats.maxMp);
+      const expPer = isPlayer ? safePercent(unit.exp, unit.maxExp) : 0;
+
+      // Determine Character Image based on Rank (Awakening)
+      let charImg = null;
+      if (isPlayer && unit.rank >= 1) {
+          const elData = ELEMENTS[unit.element];
+          if (unit.rank >= 3 && elData.img3) charImg = elData.img3;
+          else if (unit.rank >= 2 && elData.img2) charImg = elData.img2;
+          else if (elData.img1) charImg = elData.img1;
+      } else if (isPlayer && unit.rank === 0 && unit.element === 'normal' && ELEMENTS.normal.img1) {
+          charImg = ELEMENTS.normal.img1;
+      }
+
+      // Monster Visuals
+      let monsterClass = "";
+      let nameColor = isPlayer ? "text-gray-200" : (MONSTER_RANKS[unit.rank]?.color || "text-gray-300");
+      
+      if (!isPlayer) {
+          if (unit.isBoss) {
+              monsterClass = "border-fuchsia-600 bg-fuchsia-900/30 scale-105 shadow-xl shadow-fuchsia-900/50";
+              nameColor = "text-fuchsia-400 font-extrabold";
+          } else if (unit.isMidBoss) {
+              monsterClass = "border-orange-500 bg-orange-900/30 scale-105 shadow-lg shadow-orange-900/40";
+              nameColor = "text-orange-400 font-bold";
+          }
+      }
+
+      return (
+          <div onClick={onClick} className={`relative p-2 rounded-lg border-2 transition-all 
+            ${isSelected ? 'border-yellow-400 bg-yellow-900/40 scale-105 z-10' : 'border-gray-700 bg-gray-800/60'}
+            ${isTarget ? 'border-red-500 animate-pulse bg-red-900/30' : ''}
+            ${unit.hp <= 0 ? 'opacity-50 grayscale border-red-900' : ''}
+            ${unit.hasActed ? 'opacity-60 brightness-75' : ''}
+            ${monsterClass}
+            ${stats.activeSets?.length > 0 ? 'shadow-[0_0_10px_rgba(255,255,255,0.3)]' : ''}
+          `}>
+              <div className="absolute bottom-full left-0 w-full flex flex-col items-center justify-end h-32 pointer-events-none z-20 pb-2">
+                  {floatingTexts.filter(ft => ft.targetId === unit.id).map(ft => (
+                      <div key={ft.id} className={`${ft.color} font-bold text-shadow animate-bounce`}>{ft.text}</div>
+                  ))}
+              </div>
+              
+              <div className="flex justify-between items-center text-xs mb-1">
+                  <div className="flex items-center gap-1 font-bold">
+                        {/* Character Image or Icon */}
+                        {charImg ? (
+                             <img src={charImg} alt="" className="w-8 h-8 rounded-full border border-white/20 object-cover" />
+                        ) : (
+                            <div className={`w-2 h-2 rounded-full ${ELEMENTS[unit.element].color.replace('text', 'bg')}`}/>
+                        )}
+                      <span className={`${nameColor} ${unit.isBoss ? 'text-lg' : 'text-sm'}`}>{unit.name}</span>
+                  </div>
+                  <div className="text-[10px] text-yellow-500 font-bold">Lv.{unit.level}</div>
+              </div>
+              
+              <div className="space-y-1">
+                  <div className="h-1.5 bg-gray-900 rounded-full overflow-hidden"><div className="h-full bg-red-500 transition-all" style={{width: `${hpPer}%`}}/></div>
+                  {isPlayer && <div className="h-1 bg-gray-900 rounded-full overflow-hidden"><div className="h-full bg-blue-500 transition-all" style={{width: `${mpPer}%`}}/></div>}
+                  {isPlayer && <div className="h-1 bg-gray-900 rounded-full overflow-hidden mt-0.5"><div className="h-full bg-yellow-600 transition-all" style={{width: `${expPer}%`}}/></div>}
+              </div>
+              {unit.hasActed && <div className="absolute inset-0 flex items-center justify-center bg-black/30"><Check className="text-gray-400"/></div>}
+              {unit.isDefending && <div className="absolute top-0 right-0 bg-blue-900 p-0.5 rounded text-[8px] border border-blue-500">🛡️</div>}
+              {unit.hp <= 0 && <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-red-500 font-bold text-sm">DEAD</div>}
+              {/* Set Effect Aura */}
+              {stats.activeSets?.length > 0 && <div className="absolute -inset-1 border border-white/20 rounded-xl animate-pulse pointer-events-none"/>}
+          </div>
+      );
+  };
+
+  return (
+    <div className={`min-h-screen text-gray-100 flex flex-col font-sans max-w-lg mx-auto shadow-2xl overflow-hidden border-x border-gray-800 relative transition-all duration-1000 ${theme.bg}`}>
+      
+      {/* Level Up Modal */}
+      {levelUpQueue.length > 0 && (
+          <div className="absolute inset-0 bg-black/90 z-50 flex flex-col items-center justify-center p-6">
+              <h2 className="text-2xl font-bold text-yellow-400 mb-2">레벨 업!</h2>
+              <p className="mb-4 text-gray-300">{levelUpQueue[0].name}의 능력을 선택하세요</p>
+              <div className="grid gap-3 w-full">
+                  {levelUpQueue[0].options.map((opt, i) => (
+                      <button key={i} onClick={()=>handleLevelUpSelect(levelUpQueue[0].heroId, opt)}
+                          className="p-4 bg-gray-800 border border-gray-600 rounded-xl hover:bg-gray-700 hover:border-yellow-500 transition-all flex justify-between items-center">
+                          <span className="font-bold">{opt.name}</span>
+                          <UserPlus size={16} className="text-yellow-400"/>
+                      </button>
+                  ))}
+              </div>
+          </div>
+      )}
+
+      {/* Job Change Modal */}
+      {jobChangeQueue.length > 0 && (
+          <div className="absolute inset-0 bg-black/95 z-50 flex flex-col items-center justify-center p-6 animate-fade-in">
+              <h2 className="text-2xl font-bold text-blue-400 mb-2">전직 가능!</h2>
+              <p className="mb-6 text-gray-300">새로운 직업을 선택하세요.</p>
+              <div className="grid grid-cols-2 gap-3 w-full">
+                  {jobChangeQueue[0].options.map((jobName, i) => (
+                      <button key={i} onClick={()=>handleJobChange(jobChangeQueue[0].heroId, jobName)}
+                          className="p-4 bg-gray-800 border border-gray-600 rounded-xl hover:bg-gray-700 hover:border-blue-500 transition-all flex flex-col items-center gap-2">
+                          <div className="text-blue-300">{JOB_TREE[jobName].icon}</div>
+                          <span className="font-bold">{jobName}</span>
+                          <span className="text-[10px] text-gray-500">{JOB_TREE[jobName].skills[0].desc}</span>
+                      </button>
+                  ))}
+              </div>
+          </div>
+      )}
+
+      {/* Warehouse / Equip Modal */}
+      {selectedEquipHero !== null && (
+        <div className="absolute inset-0 bg-black/95 z-50 flex flex-col p-4 animate-fade-in overflow-hidden">
+             <div className="flex justify-between items-center mb-4 border-b border-gray-700 pb-2">
+                <h2 className="text-lg font-bold">장비 관리</h2>
+                <button onClick={() => setSelectedEquipHero(null)}><X/></button>
+            </div>
+            <UnitCard unit={party[selectedEquipHero]} isPlayer={true} onClick={()=>{}} />
+            
+            <div className="flex gap-2 my-2">
+                <button onClick={()=>setWarehouseTab('equip')} className={`flex-1 py-1 rounded text-xs ${warehouseTab==='equip'?'bg-blue-600':'bg-gray-800'}`}>장비</button>
+                <button onClick={()=>setWarehouseTab('potion')} className={`flex-1 py-1 rounded text-xs ${warehouseTab==='potion'?'bg-green-600':'bg-gray-800'}`}>물약</button>
+                <button onClick={()=>setWarehouseTab('gem')} className={`flex-1 py-1 rounded text-xs ${warehouseTab==='gem'?'bg-purple-600':'bg-gray-800'}`}>보석</button>
+            </div>
+
+            {warehouseTab === 'equip' && (
+                <div className="grid grid-cols-5 gap-2 mb-2 p-2 bg-gray-900 rounded">
+                    {Object.keys(ITEM_TYPES).map(slot => (
+                        <div 
+                            key={slot} 
+                            onClick={() => party[selectedEquipHero].equipment[slot] && unequipItem(selectedEquipHero, slot)}
+                            className={`aspect-square rounded border border-gray-700 flex flex-col items-center justify-center relative 
+                            ${party[selectedEquipHero].equipment[slot] ? RARITY[party[selectedEquipHero].equipment[slot].rarity].border + ' bg-gray-800 cursor-pointer hover:bg-gray-700' : 'bg-gray-900 opacity-50'}`}
+                        >
+                            {ITEM_TYPES[slot].icon}
+                            {/* <span className="text-[8px] mt-1">{ITEM_TYPES[slot].name}</span> */}
+                            {party[selectedEquipHero].equipment[slot] && (
+                                <>
+                                    <div className="absolute top-0 right-0 flex flex-col items-end">
+                                        <span className="text-[8px] text-yellow-400">★{party[selectedEquipHero].equipment[slot].star}</span>
+                                    </div>
+                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 bg-black/60 transition-opacity">
+                                        <LogOut size={16} className="text-red-400"/>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
+            
+            <div className="flex-1 overflow-y-auto space-y-2 pr-1 pb-4">
+                {/* GEM TAB */}
+                {warehouseTab === 'gem' && (
+                    <div className="grid grid-cols-3 gap-2">
+                        {Object.keys(gems).map(k => (
+                            <div key={k} className="bg-gray-800 p-2 rounded border border-gray-600 flex flex-col items-center">
+                                <div className={ELEMENTS[k].color}>{ELEMENTS[k].icon}</div>
+                                <span className="text-xs mt-1">{ELEMENTS[k].name}</span>
+                                <span className="text-sm font-bold">{gems[k]}</span>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {/* EQUIP/POTION TAB */}
+                {warehouseTab !== 'gem' && inventory.filter(i => (warehouseTab==='equip' ? i.type!=='potion' : i.type==='potion')).map(item => {
+                    const canSynth = warehouseTab==='equip' && inventory.some(dup => dup.uniqueId !== item.uniqueId && dup.name === item.name && dup.rarity === item.rarity && dup.level === item.level);
+                    const isWeapon = item.type === 'weapon';
+
+                    return (
+                        <div key={item.uniqueId} className={`flex justify-between items-center bg-gray-900 p-2 rounded border ${item.type==='potion' ? 'border-green-800' : RARITY[item.rarity].border}`}>
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-black/40 rounded flex items-center justify-center border border-white/10">
+                                    {item.type==='potion' ? <FlaskConical size={20} className={item.potionType==='hp'?'text-red-400':'text-blue-400'}/> : <span className={RARITY[item.rarity].color}>{ITEM_TYPES[item.type].icon}</span>}
+                                </div>
+                                <div className="flex flex-col">
+                                    <div className="flex items-center gap-1">
+                                        <span className={`text-sm font-bold ${item.type!=='potion' && RARITY[item.rarity].color}`}>{item.name}</span>
+                                        {item.type !== 'potion' && <span className="text-[10px] text-gray-500">Lv.{item.level} ★{item.star}</span>}
+                                    </div>
+                                    <div className="text-xs text-gray-300 flex flex-wrap gap-2 items-center">
+                                        {item.type==='potion' ? 
+                                            <span>회복량 <span className="text-green-400 font-bold">{item.value}</span></span> : 
+                                            <>
+                                                <span className="font-bold">{ITEM_TYPES[item.type].stat.toUpperCase()} +{item.value}</span>
+                                                {item.element && item.element !== 'normal' && <span className={`text-[10px] ${ELEMENTS[item.element].color}`}>[{ELEMENTS[item.element].name}]</span>}
+                                                {item.reqJobType && <span className="text-[9px] text-orange-400 border border-orange-500/50 px-1 rounded">{JOB_TYPE_NAMES[item.reqJobType]}</span>}
+                                            </>
+                                        }
+                                    </div>
+                                    {item.options?.length > 0 && (
+                                        <div className="flex gap-1 mt-1">
+                                            {item.options.map((opt, idx) => (
+                                                <span key={idx} className="bg-gray-700 px-1 rounded text-[9px] text-blue-300">{opt.type.toUpperCase()} +{opt.val}</span>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="flex gap-1">
+                                {canSynth && !isWeapon && <button onClick={() => handleSynthesis(item)} className="bg-purple-700 p-2 rounded text-xs animate-pulse"><Anvil size={14}/></button>}
+                                {item.type !== 'potion' && <button onClick={() => equipItem(selectedEquipHero, item)} className="bg-blue-800 p-2 rounded text-xs font-bold">장착</button>}
+                                <button onClick={() => sellItem(item)} className="bg-red-900/50 p-2 rounded text-xs hover:bg-red-800"><Trash2 size={14}/></button>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+      )}
+
+      {/* Main Header */}
+      <header className="px-4 py-3 border-b border-white/10 flex justify-between items-center z-10 bg-black/40 backdrop-blur-md sticky top-0 shadow-lg">
+         <div className="flex items-center gap-2">
+             <div className="bg-gradient-to-br from-yellow-400 to-orange-600 p-1.5 rounded-lg shadow-inner">
+                <Trophy size={16} className="text-white"/>
+             </div>
+             <div>
+                 <h1 className="font-bold text-white text-sm">뺑꾸던전 21.0</h1>
+                 <div className="text-[10px] text-gray-400">{theme.name} <span className="text-yellow-500 font-bold">{stage}F</span></div>
+             </div>
+         </div>
+         <div className="flex items-center gap-2 bg-black/60 px-3 py-1.5 rounded-full border border-white/10">
+             <Coins size={14} className="text-yellow-400"/> 
+             <span className="font-mono font-bold">{formatNumber(gold)}</span>
+         </div>
+      </header>
+
+      <main className="flex-1 relative overflow-y-auto p-4 custom-scrollbar">
+        {gameState === 'menu' && (
+             <div className="h-full flex flex-col gap-4">
+                 <div className="flex gap-1 overflow-x-auto pb-2 no-scrollbar">
+                     {['main', 'manage', 'recruit', 'shop', 'inn', 'cathedral', 'gamble'].map(tab => (
+                         <button key={tab} onClick={()=>setMenuTab(tab)} 
+                             className={`flex-none px-4 py-2 rounded-xl text-xs font-bold border
+                             ${menuTab===tab ? 'bg-gray-700 text-white border-white/20' : 'bg-black/40 text-gray-400 border-white/5'}`}>
+                             {tab==='main'?'메인':tab==='manage'?'관리':tab==='recruit'?'영입':tab==='shop'?'상점':tab==='inn'?'여관':tab==='cathedral'?'성당':'도박'}
+                         </button>
+                     ))}
+                 </div>
+
+                 {menuTab === 'main' && (
+                    <div className="flex flex-col items-center gap-4 h-full relative">
+                        {/* Party Grid */}
+                        <div className="w-full grid grid-cols-2 gap-2 overflow-y-auto pb-20">
+                            {party.map((p, i) => <UnitCard key={p.id} unit={p} isPlayer={true} onClick={()=>setSelectedEquipHero(i)} />)}
+                        </div>
+                        
+                        {/* Start Battle Button (Fixed Bottom) */}
+                        <div className="w-full mt-auto">
+                            <button onClick={startBattleInit} className={`w-full py-4 rounded-2xl font-bold text-xl text-white shadow-xl bg-gradient-to-r ${theme.accent} hover:scale-105 transition-all flex items-center justify-center gap-3`}>
+                                <Sword /> 다음 층 도전
+                            </button>
+                        </div>
+
+                        {/* Inventory Button (Absolute) */}
+                        <div className="fixed bottom-24 right-4">
+                            <button onClick={()=>setSelectedEquipHero(0)} className="bg-yellow-600 p-3 rounded-full shadow-lg border border-yellow-400 hover:scale-110 transition-transform">
+                                <Backpack size={24} className="text-white"/>
+                            </button>
+                        </div>
+                    </div>
+                 )}
+
+                 {menuTab === 'manage' && (
+                     <div className="space-y-4">
+                         <h3 className="font-bold">파티 관리</h3>
+                         {/* 대기소 리스트 */}
+                         {barracks.length > 0 ? (
+                             <div className="grid gap-2">
+                                 {barracks.map((hero, i) => (
+                                     <div key={hero.id} className="bg-gray-800 p-2 rounded flex justify-between items-center border border-gray-700">
+                                         <div className="flex items-center gap-2">
+                                             <span className="text-gray-400 text-xs">대기</span>
+                                             <span className="font-bold text-sm">{hero.name}</span>
+                                             <span className="text-xs text-yellow-500">Lv.{hero.level}</span>
+                                         </div>
+                                         <div className="flex gap-1">
+                                             <button onClick={()=>moveFromBarracksToParty(i)} className="bg-green-700 px-2 py-1 rounded text-xs">합류</button>
+                                             <button onClick={()=>dismissMember(hero.id, 'barracks')} className="bg-red-900/50 text-red-300 px-2 py-1 rounded text-xs border border-red-800 hover:bg-red-900">추방</button>
+                                         </div>
+                                     </div>
+                                 ))}
+                             </div>
+                         ) : <div className="text-gray-500 text-xs text-center py-4">대기 중인 동료가 없습니다.</div>}
+
+                         <h3 className="font-bold mt-4">현재 파티 ({party.length}/6)</h3>
+                         <div className="grid gap-2">
+                             {party.map((hero, i) => (
+                                 <div key={hero.id} className="bg-gray-800 p-2 rounded flex justify-between items-center border border-gray-600">
+                                     <div className="flex items-center gap-2">
+                                         <span className="font-bold text-sm">{hero.name}</span>
+                                         <span className="text-xs text-yellow-500">Lv.{hero.level}</span>
+                                     </div>
+                                     <div className="flex gap-1">
+                                         <button onClick={()=>{setManageHeroId(hero.id); setPartyManageMode(true)}} className="bg-blue-900 px-2 py-1 rounded text-xs border border-blue-600">속성/장비</button>
+                                         <button onClick={()=>moveFromPartyToBarracks(i)} className="bg-gray-700 px-2 py-1 rounded text-xs border border-gray-500">대기</button>
+                                         <button onClick={()=>dismissMember(hero.id, 'party')} className="bg-red-900/50 text-red-300 px-2 py-1 rounded text-xs border border-red-800 hover:bg-red-900">추방</button>
+                                     </div>
+                                 </div>
+                             ))}
+                         </div>
+
+                         {/* 속성 진화 패널 (Toggle) */}
+                         {manageHeroId && partyManageMode && (
+                             <div className="bg-black/80 fixed inset-0 z-50 flex items-center justify-center p-4">
+                                 <div className="bg-gray-900 p-4 rounded-xl border border-white/20 w-full max-w-sm relative">
+                                     <button onClick={()=>{setManageHeroId(null); setPartyManageMode(false)}} className="absolute top-2 right-2 p-1"><X/></button>
+                                     
+                                     <h3 className="font-bold mb-4 flex items-center gap-2"><ArrowUpCircle size={16}/> {party.find(p=>p.id===manageHeroId)?.name} 관리</h3>
+                                     
+                                     {party.find(p=>p.id===manageHeroId)?.rank === 0 ? (
+                                         <div className="grid grid-cols-3 gap-2 mb-4">
+                                             {Object.keys(ELEMENTS).filter(k=>k!=='normal').map(k => (
+                                                 <button key={k} onClick={()=>handleEvolve(k)} className="flex flex-col items-center gap-1 p-2 bg-gray-800 border border-gray-600 rounded hover:bg-gray-700">
+                                                     <div className={ELEMENTS[k].color}>{ELEMENTS[k].icon}</div>
+                                                     <span className="text-xs">{ELEMENTS[k].name}</span>
+                                                     <span className="text-[10px] text-gray-400">보석 1개</span>
+                                                 </button>
+                                             ))}
+                                         </div>
+                                     ) : (
+                                         <div className="text-center mb-4">
+                                             <p className="mb-2 text-sm text-gray-300">현재 속성: <span className={ELEMENTS[party.find(p=>p.id===manageHeroId)?.element].color}>{ELEMENTS[party.find(p=>p.id===manageHeroId)?.element].name}</span></p>
+                                             <button onClick={()=>handleEvolve()} className="px-6 py-2 bg-purple-700 rounded-lg text-sm font-bold shadow-lg hover:bg-purple-600">
+                                                 다음 단계 진화 (보석 {party.find(p=>p.id===manageHeroId)?.rank === 1 ? 3 : 5}개)
+                                             </button>
+                                         </div>
+                                     )}
+                                     
+                                     <button onClick={()=>{setSelectedEquipHero(party.findIndex(p=>p.id===manageHeroId))}} className="w-full py-2 bg-blue-800 rounded mb-4 text-xs font-bold border border-blue-500">장비 장착/해제</button>
+
+                                     <div className="pt-4 border-t border-gray-700">
+                                         <h4 className="text-xs font-bold mb-2">보유 보석</h4>
+                                         <div className="flex flex-wrap gap-2">
+                                             {Object.keys(gems).filter(k=>gems[k]>0).map(k => (
+                                                 <span key={k} className="text-[10px] bg-gray-800 px-2 py-1 rounded border border-gray-600 flex items-center gap-1">
+                                                     {ELEMENTS[k].icon} {gems[k]}
+                                                 </span>
+                                             ))}
+                                         </div>
+                                     </div>
+                                 </div>
+                             </div>
+                         )}
+                     </div>
+                 )}
+
+                 {menuTab === 'recruit' && (
+                     <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
+                         <Users size={48} className="text-green-500 mb-2"/>
+                         <h2 className="text-xl font-bold">동료 영입</h2>
+                         <p className="text-gray-400 text-xs mb-4">언제든지 새로운 동료를 맞이하세요.<br/>(최대 6명 파티, 초과 시 대기소 이동)</p>
+                         <button onClick={()=>recruitMember(false)} className="w-full py-3 bg-green-700 hover:bg-green-600 rounded-xl font-bold shadow-lg transition-all border border-green-500/50">
+                             동료 영입 ({200 + party.length * 100}G)
+                         </button>
+                     </div>
+                 )}
+
+                 {menuTab === 'shop' && (
+                     <div className="space-y-4">
+                         <div className="bg-black/20 p-3 rounded-xl border border-white/10">
+                             <h3 className="font-bold mb-2 flex items-center gap-2"><FlaskConical size={16} className="text-green-400"/> 물약 구매</h3>
+                             <div className="grid grid-cols-1 gap-2">
+                                 {Object.keys(POTIONS).map(key => (
+                                     <button key={key} onClick={()=>buyPotion(key)} className="flex justify-between items-center p-2 bg-gray-800 rounded border border-gray-700 hover:bg-gray-700">
+                                         <div className="flex items-center gap-2">
+                                             {POTIONS[key].icon} <span className="text-xs">{POTIONS[key].name}</span>
+                                         </div>
+                                         <span className="text-xs text-yellow-400">{POTIONS[key].cost}G</span>
+                                     </button>
+                                 ))}
+                             </div>
+                         </div>
+                     </div>
+                 )}
+
+                 {menuTab === 'inn' && (
+                     <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
+                         <Activity size={48} className="text-red-500 mb-2"/>
+                         <h2 className="text-xl font-bold">여관 (휴식)</h2>
+                         <p className="text-gray-400 text-xs mb-4">살아있는 동료들의 체력과 마나를 회복합니다.<br/>(사망한 동료는 성당으로 가세요)</p>
+                         <button onClick={healPartyInInn} className="w-full py-3 bg-red-900/80 hover:bg-red-800 rounded-xl font-bold shadow-lg transition-all border border-red-500/50">
+                             생존자 회복 (100G)
+                         </button>
+                     </div>
+                 )}
+
+                 {menuTab === 'cathedral' && (
+                     <div className="space-y-4 h-full flex flex-col">
+                         <div className="text-center py-4">
+                             <Church size={48} className="text-yellow-200 mx-auto mb-2"/>
+                             <h2 className="text-xl font-bold text-yellow-100">성당 (부활)</h2>
+                             <p className="text-gray-400 text-xs">사망한 동료를 부활시킵니다.</p>
+                         </div>
+                         <div className="flex-1 overflow-y-auto space-y-2">
+                             {party.filter(p => p.hp <= 0).length === 0 && <div className="text-center text-gray-500 py-10">부활이 필요한 동료가 없습니다.</div>}
+                             {party.filter(p => p.hp <= 0).map(p => (
+                                 <div key={p.id} className="flex justify-between items-center bg-gray-800 p-3 rounded-xl border border-gray-700">
+                                     <div className="flex items-center gap-3">
+                                         <Skull size={20} className="text-gray-500"/>
+                                         <div>
+                                             <div className="font-bold text-sm text-gray-300">{p.name}</div>
+                                             <div className="text-xs text-gray-500">Lv.{p.level}</div>
+                                         </div>
+                                     </div>
+                                     <button onClick={()=>reviveHero(p.id)} className="bg-yellow-700 hover:bg-yellow-600 px-4 py-2 rounded-lg text-xs font-bold text-white shadow">
+                                         부활 ({p.level * 50}G)
+                                     </button>
+                                 </div>
+                             ))}
+                         </div>
+                     </div>
+                 )}
+
+                 {menuTab === 'gamble' && (
+                     <div className="flex flex-col items-center justify-center h-full gap-6 text-center">
+                         <div className="p-4 bg-black/40 rounded-full border border-purple-500/30"><Dices size={48} className="text-purple-400 animate-pulse"/></div>
+                         <h2 className="text-xl font-bold text-purple-200">홀짝 게임</h2>
+                         <div className="flex items-center gap-2 bg-black/50 p-2 rounded-lg border border-white/10">
+                             <button onClick={()=>setBetAmount(Math.max(100, betAmount-100))} className="p-2 hover:bg-white/10 rounded">-</button>
+                             <input type="number" value={betAmount} readOnly className="bg-transparent text-center w-24 font-bold text-yellow-400 outline-none" />
+                             <button onClick={()=>setBetAmount(Math.min(gold, betAmount+100))} className="p-2 hover:bg-white/10 rounded">+</button>
+                         </div>
+                         <div className="flex gap-4 w-full px-8">
+                             <button onClick={()=>{setGambleChoice('odd'); handleGamble()}} className="flex-1 py-4 bg-blue-900 hover:bg-blue-800 rounded-xl font-bold border border-blue-600">홀</button>
+                             <button onClick={()=>{setGambleChoice('even'); handleGamble()}} className="flex-1 py-4 bg-red-900 hover:bg-red-800 rounded-xl font-bold border border-red-600">짝</button>
+                         </div>
+                     </div>
+                 )}
+             </div>
+        )}
+
+        {gameState === 'defeat' && (
+            <div className="h-full flex flex-col items-center justify-center animate-fade-in gap-6">
+                <Skull size={64} className="text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]"/>
+                <div className="text-center">
+                    <h2 className="text-3xl font-bold text-white mb-2">패배했습니다...</h2>
+                    <p className="text-gray-400 text-sm">전투 불능 상태입니다.</p>
+                </div>
+                <div className="flex flex-col gap-3 w-full px-10">
+                    <button onClick={retryFloor} className="py-3 bg-yellow-700 hover:bg-yellow-600 rounded-xl font-bold text-white shadow-lg">
+                        제자리 부활 (골드 10% 소모)
+                    </button>
+                    <button onClick={returnTown} className="py-3 bg-gray-700 hover:bg-gray-600 rounded-xl font-bold text-gray-300 shadow-lg">
+                        마을로 귀환 (사망 상태 유지)
+                    </button>
+                </div>
+            </div>
+        )}
+
+        {gameState === 'battle' && (
+            <div className="h-full flex flex-col">
+                <div className="grid grid-cols-3 gap-2 mb-4 min-h-[120px] content-center">
+                    {enemies.map((e) => (
+                        <UnitCard key={e.id} unit={e} isPlayer={false} 
+                            onClick={() => targetingMode && selectedSkill && selectedSkill.type !== 'heal_single' && executeSkill(e.id, selectedSkill)} 
+                            isTarget={targetingMode && selectedSkill?.type !== 'heal_single'}
+                        />
+                    ))}
+                </div>
+
+                <div className="flex justify-center mb-4">
+                     <div className={`px-4 py-1 rounded-full text-xs font-bold border ${turn === 'player' ? 'bg-blue-900 border-blue-400 text-blue-100 animate-pulse' : 'bg-red-900 border-red-400 text-red-100'}`}>
+                         {turn === 'player' ? "아군 턴 (행동할 영웅을 선택하세요)" : "적군 턴..."}
+                     </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                    {party.map((p, i) => (
+                        <UnitCard key={p.id} unit={p} isPlayer={true} 
+                            onClick={() => { 
+                                if (targetingMode && selectedSkill?.type === 'heal_single') {
+                                    executeSkill(p.id, selectedSkill);
+                                } else if(!p.hasActed && turn==='player' && !targetingMode && p.hp > 0) {
+                                    setSelectedHeroIndex(i);
+                                } 
+                            }} 
+                            isSelected={selectedHeroIndex === i} 
+                            isTarget={targetingMode && selectedSkill?.type === 'heal_single'}
+                        />
+                    ))}
+                </div>
+
+                {/* Actions Panel */}
+                {selectedHeroIndex !== null && turn === 'player' && !targetingMode && (
+                    <div className="mt-auto pt-4 animate-slide-up">
+                        <div className="flex justify-between items-center mb-2">
+                             <span className="text-sm font-bold">{party[selectedHeroIndex].name}의 행동</span>
+                             <button onClick={()=>{setSelectedHeroIndex(null); setActionMode(null);}} className="text-xs bg-gray-700 px-2 py-1 rounded">취소</button>
+                        </div>
+                        <div className="flex gap-2 mb-2">
+                            <button onClick={()=>handleSkillSelect(BASIC_ATTACK)} className="flex-1 bg-gray-800 py-2 rounded text-xs border border-gray-600 hover:bg-gray-700 flex flex-col items-center gap-1"><Sword size={14}/> 공격</button>
+                            <button onClick={()=>setActionMode('skill')} className="flex-1 bg-blue-900 py-2 rounded text-xs border border-blue-600 hover:bg-blue-800 flex flex-col items-center gap-1"><Zap size={14}/> 스킬</button>
+                            <button onClick={handleDefend} className="flex-1 bg-green-900 py-2 rounded text-xs border border-green-600 hover:bg-green-800 flex flex-col items-center gap-1"><Shield size={14}/> 방어</button>
+                            <button onClick={()=>setActionMode('item')} className="flex-1 bg-amber-900 py-2 rounded text-xs border border-amber-600 hover:bg-amber-800 flex flex-col items-center gap-1"><Package size={14}/> 아이템</button>
+                            <button onClick={handleWait} className="flex-1 bg-gray-700 py-2 rounded text-xs border border-gray-500 hover:bg-gray-600 flex flex-col items-center gap-1"><Hourglass size={14}/> 대기</button>
+                        </div>
+                        {actionMode === 'skill' && (
+                            <div className="flex gap-2 overflow-x-auto pb-2 border-t border-gray-700 pt-2">
+                                {getAvailableSkills(party[selectedHeroIndex]).map((skill) => {
+                                    const cdLeft = (party[selectedHeroIndex].skillCds?.[skill.id] ?? 0);
+                                    return (
+                                        <button
+                                            key={skill.id}
+                                            onClick={() => handleSkillSelect(skill)}
+                                            className="flex-none w-16 h-16 bg-gray-800 border border-gray-600 rounded flex flex-col items-center justify-center hover:bg-gray-700 relative"
+                                        >
+                                            <span className="text-[9px] font-bold text-center px-1 leading-tight">{skill.name}</span>
+                                            <span className="text-[8px] text-blue-300">{skill.mp ?? 0} MP</span>
+                                            <span className="text-[8px] text-yellow-500">x{skill.dmgRate ?? 1}</span>
+
+                                            {skill.id !== BASIC_ATTACK.id && cdLeft > 0 && (
+                                                <div className="absolute inset-0 bg-black/80 flex items-center justify-center font-bold text-lg rounded">
+                                                {cdLeft}
+                                                </div>
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
+                        {actionMode === 'item' && (
+                            <div className="flex flex-col gap-1 border-t border-gray-700 pt-2 max-h-32 overflow-y-auto">
+                                {inventory.filter(i => i.type === 'potion').map((item, i) => (
+                                    <button key={i} onClick={() => handleItemUse(item.uniqueId)} className="flex justify-between items-center p-2 bg-gray-800 rounded border border-gray-600 hover:bg-gray-700">
+                                        <div className="flex items-center gap-2"><FlaskConical size={12} className={item.potionType==='hp'?'text-red-400':'text-blue-400'}/>
+                                        <span className="text-xs">{item.name}</span></div>
+                                        <span className="text-[10px] text-green-400">{item.potionType==='hp'?`HP+${item.value}`:`MP+${item.value}`}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+                
+                {targetingMode && (
+                    <div className="mt-auto pt-4 text-center">
+                        <div className="text-yellow-400 font-bold mb-2 animate-pulse">대상을 선택하세요!</div>
+                        <button onClick={()=>{setTargetingMode(false); setSelectedSkill(null)}} className="bg-gray-700 px-6 py-2 rounded-full">취소</button>
+                    </div>
+                )}
+            </div>
+        )}
+      </main>
+
+      <div ref={logContainerRef} className="h-24 bg-black/60 backdrop-blur-md border-t border-white/10 p-2 overflow-y-auto text-[10px] font-mono space-y-1 z-20 shadow-inner custom-scrollbar">
+          {logs.map(log => <div key={log.id} className={`${log.type==='important'?'text-yellow-300 font-bold':log.type==='error'?'text-red-400':log.type==='success'?'text-green-400':'text-gray-400'}`}>{log.text}</div>)}
+      </div>
+    </div>
+  );
+}
